@@ -12,7 +12,7 @@ async function open(page, query, respond) {
   const elements = new Map();
   function node(ast) {
     const attrs = Object.fromEntries((ast.attrs || []).map(attr => [attr.name, attr.value]));
-    const item = { tagName: ast.tagName, value: attrs.value || "", textContent: "", children: [], events: new Map(),
+    const item = { tagName: ast.tagName, value: attrs.value || "", href: attrs.href, textContent: "", children: [], events: new Map(),
       hidden: Object.hasOwn(attrs, "hidden"), checked: false, disabled: Object.hasOwn(attrs, "disabled"),
       append(...children) { this.children.push(...children); if (this.tagName === "select" && !this.value) this.value = children[0].value; },
       replaceChildren(...children) { this.children = children; if (this.tagName === "select") this.value = ""; },
@@ -50,6 +50,43 @@ const configuration = { authProvider: "mongodb", providers: { stripe: true },
     Go:{ currency:"INR", regularAmount:1500, amount:750, discountPercent:50 },
     Pro:{ currency:"INR", regularAmount:5000, amount:2500, discountPercent:50 },
   } };
+
+test("unavailable checkout exposes a WhatsApp admin contact without enabling payment", async () => {
+  for (const unavailableConfig of [false, true]) {
+    const ui = await open("Membership.html", "", async url => url === "/api/config"
+      ? unavailableConfig
+        ? { status: 503, body: { error: "Unavailable" } }
+        : { body: { ...configuration, providers: {} } }
+      : { body: { signedIn: true, plan: "Free" } });
+    assert.equal(ui.element("membership-admin-contact").hidden, false);
+    const contact = new URL(ui.element("membership-admin-whatsapp").href);
+    assert.equal(contact.origin, "https://wa.me");
+    assert.equal(contact.pathname, "/918985837483");
+    assert.equal(contact.searchParams.get("text"), "Hello KR7Tech admin, I need help with my membership or checkout.");
+    assert.equal(ui.element("membership-buy").disabled, true);
+    assert.match(ui.element("membership-price").textContent, /WhatsApp.*free previews/);
+    assert.equal(ui.requests.filter(item => item.url === "/api/checkout").length, 0);
+  }
+});
+
+test("a failed checkout shows admin assistance and a deliberate retry clears it", async () => {
+  let attempts = 0;
+  const ui = await open("Membership.html", "?plan=Go", async url => {
+    if (url === "/api/config") return { body: configuration };
+    if (url === "/api/session") return { body: { signedIn: true, plan: "Free" } };
+    attempts++;
+    return attempts === 1 ? { status: 503, body: { error: "Checkout is temporarily unavailable." } }
+      : { body: { checkoutUrl: "https://checkout.stripe.com/verified" } };
+  });
+  assert.equal(ui.element("membership-admin-contact").hidden, true);
+  ui.element("membership-acknowledge").checked = true;
+  await ui.element("membership-form").events.get("submit")({ preventDefault() {} });
+  assert.equal(ui.element("membership-admin-contact").hidden, false);
+  assert.deepEqual(ui.redirects, []);
+  await ui.element("membership-form").events.get("submit")({ preventDefault() {} });
+  assert.equal(ui.element("membership-admin-contact").hidden, true);
+  assert.deepEqual(ui.redirects, ["https://checkout.stripe.com/verified"]);
+});
 
 test("the INR offer is explained at checkout and never represented as a PayPal USD discount", async () => {
   const config = { ...configuration, providers:{ stripe:true, paypal:true },

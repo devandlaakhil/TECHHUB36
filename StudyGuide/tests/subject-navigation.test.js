@@ -6,7 +6,7 @@ const path = require("node:path");
 const test = require("node:test");
 const { parse } = require("parse5");
 const { COURSES } = require("../learning-catalog");
-const { selectedTopic } = require("../subject-qa");
+const { selectedTopic, filterSubjects } = require("../subject-qa");
 const questions = require("../api/questions");
 const projectBank = require("../api/_project-questions");
 const { mergeQuestions } = require("../api/_question-bank");
@@ -60,6 +60,15 @@ test("every subject deep link targets its dedicated subject view, not Company In
   assert.equal(selectedTopic("?topic=JavaScript%20%2F%20TypeScript"), "JavaScript / TypeScript");
   assert.equal(selectedTopic("?topic=unknown"), null);
   assert.equal(selectedTopic(""), null);
+});
+
+test("interview topic discovery searches public topic names and categories without loading question banks", () => {
+  assert.equal(filterSubjects().length, subjects.length);
+  assert.deepEqual(filterSubjects("  sQl  ").map(subject => subject.topic), ["SQL"]);
+  assert.deepEqual(filterSubjects("backend core").map(subject => subject.topic), ["ASP.NET Core", "EF Core"]);
+  assert.ok(filterSubjects("frontEND").every(subject => subject.category === "Frontend"));
+  assert.deepEqual(filterSubjects("no matching topic"), []);
+  assert.deepEqual(filterSubjects("<script>"), []);
 });
 
 test("all static local HTML navigation links and anchor targets exist", () => {

@@ -1,0 +1,199 @@
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --theme-page: #101923;
+  --theme-surface: #172431;
+  --theme-elevated: #203140;
+  --theme-field: #101c29;
+  --theme-ink: #edf3fa;
+  --theme-muted: #b7c3cf;
+  --theme-line: #3b5064;
+  --theme-accent: #65e0bb;
+  --theme-on-accent: #072b21;
+  --theme-blue: #a4cdff;
+  --theme-blue-soft: #1a304a;
+  --theme-success: #a6ebc6;
+  --theme-success-soft: #15382d;
+  --theme-warning: #ffe0a6;
+  --theme-warning-soft: #342b1d;
+  --theme-danger: #ffc2cc;
+  --theme-danger-soft: #3c2530;
+  --theme-code: #101c2a;
+  --theme-overlay: #101923e8;
+}
+html[data-theme="light"] {
+  color-scheme: light;
+  --theme-page: #ffffff;
+  --theme-surface: #f8fafc;
+  --theme-elevated: #eef3f8;
+  --theme-field: #ffffff;
+  --theme-ink: #172b43;
+  --theme-muted: #4b5e74;
+  --theme-line: #c9d5e2;
+  --theme-accent: #0c705c;
+  --theme-on-accent: #ffffff;
+  --theme-blue: #194f99;
+  --theme-blue-soft: #eaf2ff;
+  --theme-success: #185c3f;
+  --theme-success-soft: #e8f7ef;
+  --theme-warning: #80500c;
+  --theme-warning-soft: #fff6df;
+  --theme-danger: #982c42;
+  --theme-danger-soft: #fff0f3;
+  --theme-code: #f0f4f9;
+  --theme-overlay: #fffffff0;
+}
+html[data-theme] {
+  --page: var(--theme-page);
+  --paper: var(--theme-page);
+  --bg: var(--theme-page);
+  --surface: var(--theme-surface);
+  --panel: var(--theme-surface);
+  --panel2: var(--theme-elevated);
+  --ink: var(--theme-ink);
+  --text: var(--theme-ink);
+  --muted: var(--theme-muted);
+  --line: var(--theme-line);
+  --brand: var(--theme-accent);
+  --green: var(--theme-accent);
+  --cyan: var(--theme-blue);
+  --blue: var(--theme-blue);
+  --gold: var(--theme-warning);
+  --accent: var(--theme-warning);
+  --amber: var(--theme-warning);
+  --teal: var(--theme-accent);
+  --teal-light: var(--theme-success-soft);
+  --orange: var(--theme-warning);
+  --orange-light: var(--theme-warning-soft);
+  --red: var(--theme-danger);
+  --purple: #6152d6;
+  --green-light: var(--theme-success-soft);
+  --blue-light: var(--theme-blue-soft);
+  --amber-light: var(--theme-warning-soft);
+  background: var(--theme-page);
+}
+html[data-theme] body { background: var(--theme-page); color: var(--theme-ink); }
+html[data-theme] a { color: var(--theme-accent); }
+html[data-theme] :focus-visible { outline-color: var(--theme-accent); }
+html[data-theme] :is(.site-header :focus-visible, .site-header .site-offer a:focus-visible) { outline-color: var(--theme-accent); }
+html[data-theme] .site-skip-link { background: var(--theme-surface); color: var(--theme-ink); }
+html[data-theme] label { color: var(--theme-ink); }
+html[data-theme] :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="submit"]), select, textarea) {
+  background: var(--theme-field); color: var(--theme-ink); border-color: var(--theme-line);
+}
+html[data-theme] :is(input, textarea)::placeholder { color: var(--theme-muted); opacity: 1; }
+html[data-theme] :is(input[type="checkbox"], input[type="radio"]) { accent-color: var(--theme-accent); }
+
+html[data-theme] :is(.site-header, .site-footer, .site-header .site-group-panel) {
+  background: var(--theme-surface); color: var(--theme-ink); border-color: var(--theme-line);
+}
+html[data-theme] :is(.site-header .site-brand, .site-footer .site-brand) { color: var(--theme-ink); }
+html[data-theme] :is(.site-header .site-brand span, .site-footer .site-brand span) { color: var(--theme-accent); }
+html[data-theme] :is(.site-header .site-primary-nav a, .site-header .site-nav-group > summary, .site-footer-links a) {
+  color: var(--theme-ink);
+}
+html[data-theme] :is(.site-header .site-primary-nav a:hover, .site-header .site-nav-group > summary:hover,
+  .site-header .site-primary-nav a[aria-current="page"], .site-header .site-nav-group[data-current-section] > summary) {
+  background: var(--theme-blue-soft); color: var(--theme-blue); border-color: var(--theme-line);
+}
+html[data-theme] .site-header .site-primary-nav a.site-pin-button {
+  background: var(--theme-accent); color: var(--theme-on-accent); border-color: var(--theme-accent);
+}
+html[data-theme] :is(.site-header .site-menu-toggle, .site-header .site-theme-toggle) {
+  background: var(--theme-elevated); color: var(--theme-ink); border-color: var(--theme-line);
+}
+html[data-theme] :is(.site-breadcrumb, .site-footer-intro p, .site-footer .site-footer-note) { color: var(--theme-muted); }
+html[data-theme] :is(.site-breadcrumb a, .site-footer-links h2) { color: var(--theme-blue); }
+html[data-theme] .site-header .site-offer { background: var(--theme-warning-soft); color: var(--theme-warning); border-color: var(--theme-line); }
+html[data-theme] :is(.site-header .site-offer strong, .site-header .site-offer a) { color: var(--theme-warning); border-color: currentColor; }
+html[data-theme] .site-footer-community { background: var(--theme-success-soft); border-color: var(--theme-line); }
+html[data-theme] :is(.site-footer-community h2, .site-footer-community p) { color: var(--theme-success); }
+html[data-theme] .site-footer-community .site-community-note a { color: var(--theme-accent); }
+html[data-theme] .site-footer .site-whatsapp-link { background: var(--theme-accent); color: var(--theme-on-accent); border-color: var(--theme-accent); }
+
+html[data-theme] :is(.card, .pattern-card, .prep-card, .access-panel, .tier-card, .filters, .question, .sidebar, .workspace,
+  .question-card, .setup, .interview, .feedback, .final, .preview-item, .preview, .lesson, .term, .deep-lab,
+  .concept-card, .learning-toolbar, .account-details, .global-pro-access, .support-panel, .workbook, .choice,
+  .table-wrap, .diagram, .event-lane, .timeline > div, .steps li, .flow span, .prompt, .locked-state,
+  .roadmap, .exercise, .panel, .brief, .option, .checklist label, .nav-cards a, .guide-nav a,
+  .side, .box, .sources, .build-step, .work, .say, .day, .reality, .visual-scroll, .company-strip) {
+  background: var(--theme-surface); color: var(--theme-ink); border-color: var(--theme-line);
+}
+html[data-theme] :is(.pro-panel, .home-path-callout, .answer, .support-answer, .output, .learning-encouragement, .day.completed) {
+  background: var(--theme-success-soft); color: var(--theme-ink); border-color: var(--theme-line);
+}
+html[data-theme] .hero { background: linear-gradient(120deg, var(--theme-elevated), var(--theme-surface)); color: var(--theme-ink); }
+html[data-theme] :is(.hero p, .hero .sub, .hero .eyebrow, .hero-stat span, .global-pro-access p, .support-disclosure,
+  .lead, .example, .learning-toolbar small, .company-strip-note) { color: var(--theme-muted); }
+html[data-theme] :is(.notice, .access-note, .practice-note, .callout, .one, .warning, .locked-copy, .plain, .disclaimer) {
+  background: var(--theme-warning-soft); color: var(--theme-warning); border-color: var(--theme-line);
+}
+html[data-theme] :is(.account-panel label, .account-panel .secondary, .active-title-row h3, .sidebar-head h3,
+  label.field, .checklist label, .brief, .day h4, .day p, .company-strip h2) { color: var(--theme-ink); }
+html[data-theme] :is(.support-header h2, .prep-card h3, .question-label, .visual-title, .card h3, .company-strip-kicker) { color: var(--theme-blue); }
+html[data-theme] code { color: var(--theme-blue); }
+html[data-theme] :is(.section-note:hover, .interview-note:hover, .interview-topic-link:hover, .question-button:hover) { background: var(--theme-elevated); }
+html[data-theme] :is(.interview-topic-link[aria-current="page"], .question-button[aria-current="true"]) {
+  background: var(--theme-success-soft); color: var(--theme-success); border-color: var(--theme-accent);
+}
+html[data-theme] :is(.support-question, .tag, .cell, .node, .state, .phase-tag) { background: var(--theme-blue-soft); color: var(--theme-blue); border-color: var(--theme-line); }
+html[data-theme] :is(.tag.green, .tag.free, .node.green, .cell.cool) { background: var(--theme-success-soft); color: var(--theme-success); }
+html[data-theme] :is(.tag.amber, .tag.orange, .cell.hot, .node.amber, .node.orange) { background: var(--theme-warning-soft); color: var(--theme-warning); }
+html[data-theme] :is(.support-typing, .runner-note, .saved-status, .caption) { color: var(--theme-muted); }
+html[data-theme] :is(.support-panel button, .action-button, .language-button, .question-button .number, .roadmap-cta,
+  .side .nav button, .controls button, .subjectToggle, .hero-stats span, .journey > span, .diagram > span) {
+  background: var(--theme-elevated); color: var(--theme-ink); border-color: var(--theme-line);
+}
+html[data-theme] :is(.action-button[aria-pressed="true"], .language-button[aria-pressed="true"], .side .nav button.active, .side .nav button:hover) {
+  background: var(--theme-success-soft); color: var(--theme-success); border-color: var(--theme-accent);
+}
+html[data-theme] :is(.button:not(.secondary), .experience-upgrade, .account-panel button:not(.secondary)) {
+  background: var(--theme-accent); color: var(--theme-on-accent); border-color: var(--theme-accent);
+}
+html[data-theme] :is(.auth-controls button:not(.secondary), .admin-controls button:not(.secondary), .tier-card button, .locked-copy button,
+  .primary-link, .reset, .pro-badge, .global-pro-access button, .support-launcher, .availability-retry) {
+  background: var(--theme-accent); color: var(--theme-on-accent); border-color: var(--theme-accent);
+}
+html[data-theme] .button.secondary { background: transparent; color: var(--theme-ink); border-color: var(--theme-line); }
+html[data-theme] button.secondary { background: var(--theme-elevated); color: var(--theme-ink); border-color: var(--theme-line); }
+html[data-theme] .learning-toolbar .button { background: transparent; color: var(--theme-ink); border-color: var(--theme-accent); }
+html[data-theme] :is(.button[aria-pressed="true"], .learning-toolbar .button[aria-pressed="true"]),
+html[data-theme] .steps li::before {
+  background: var(--theme-accent); color: var(--theme-on-accent);
+}
+html[data-theme] :is(pre, .code, .formula, .experience-example) { background: var(--theme-code); color: var(--theme-ink); border-color: var(--theme-line); }
+html[data-theme] pre code { color: inherit; }
+html[data-theme] :is(th, .roadmap th) { background: var(--theme-elevated); color: var(--theme-ink); }
+html[data-theme] :is(th, td, .support-callback, .support-callback fieldset) { border-color: var(--theme-line); }
+html[data-theme] .pro-overlay { background: var(--theme-overlay); }
+html[data-theme] .locked-copy strong { color: var(--theme-warning); }
+html[data-theme] .option:has(input:checked) { background: var(--theme-blue-soft); border-color: var(--theme-blue); }
+html[data-theme] :is(.feedback-card p, .feedback-card ul) { color: var(--theme-ink); }
+html[data-theme] :is(.verdict-card p, .verdict-card .verdict-label) { color: inherit; }
+html[data-theme] body:has(.availability-brand) main { background: var(--theme-surface); border-color: var(--theme-line); }
+html[data-theme] body:has(.availability-brand) main p { color: var(--theme-muted); }
+
+html[data-theme] .qa-card {
+  --qa-border: var(--theme-line); --qa-ink: var(--theme-ink);
+  --qa-question: var(--theme-blue-soft); --qa-question-ink: var(--theme-ink);
+  --qa-answer: var(--theme-success-soft); --qa-answer-ink: var(--theme-ink); --qa-answer-accent: var(--theme-accent);
+  background: var(--theme-surface);
+}
+html[data-theme] .qa-code-block { background: var(--theme-code); color: var(--theme-ink); border-color: var(--theme-line); }
+html[data-theme] .qa-code-block > .qa-label { color: var(--theme-warning); }
+html[data-theme] .qa-card .qa-code-block pre { background: transparent; color: var(--theme-ink); }
+html[data-theme] .qa-practice-link { color: var(--theme-accent); }
+
+html[data-theme] :is(.practice-toolbar, .question-sidebar, .active-problem, .workspace-panel, .problem-description,
+  .panel-heading, .editor-topbar, .runner-controls, .testcase-grid, .solution-head) {
+  background: var(--theme-surface); color: var(--theme-ink); border-color: var(--theme-line);
+}
+html[data-theme] :is(.panel-heading strong, .editor-label) { color: var(--theme-ink); }
+html[data-theme] :is(.panel-heading span, .testcase-grid label) { color: var(--theme-muted); }
+html[data-theme] :is(.editor-body, .solution-code, .line-numbers, .run-output) { background: var(--theme-code); color: var(--theme-ink); }
+html[data-theme] .line-numbers { color: var(--theme-muted); }
+html[data-theme] .problem-index { background: var(--theme-elevated); color: var(--theme-accent); }
+html[data-theme] button.problem { color: var(--theme-ink); }
+html[data-theme] :is(button.problem:hover, button.problem[aria-current="true"]) { background: var(--theme-elevated); }
+html[data-theme] .runner-notice { background: var(--theme-elevated); color: var(--theme-muted); }
+html[data-theme] :is(.run-output[data-state="pass"], .verdict-pass) { background: var(--theme-success-soft); color: var(--theme-success); }
+html[data-theme] :is(.run-output[data-state="fail"], .verdict-fail) { background: var(--theme-danger-soft); color: var(--theme-danger); }

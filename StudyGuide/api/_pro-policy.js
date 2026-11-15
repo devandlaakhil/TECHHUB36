@@ -2,6 +2,11 @@
 
 const FREE_PREVIEW_LIMIT = 10;
 const GO_CONCEPT_LIMIT = 2;
+const VISUAL_MEMORY_PAGE = "Visual-Interview-Memory-Lab.html";
+
+function guidePreviewLimit(page) {
+  return page === VISUAL_MEMORY_PAGE ? 30 : FREE_PREVIEW_LIMIT;
+}
 
 function membershipTier(entitlements) {
   const active = entitlements.filter(item => item.active !== false);
@@ -33,4 +38,4 @@ function freePreviewIds(items, groupBy = () => "") {
 }
 
 module.exports = { FREE_PREVIEW_LIMIT, GO_CONCEPT_LIMIT, freePreviewIds, membershipTier,
-  hasInterviewAccess, goConceptIds };
+  hasInterviewAccess, goConceptIds, VISUAL_MEMORY_PAGE, guidePreviewLimit };

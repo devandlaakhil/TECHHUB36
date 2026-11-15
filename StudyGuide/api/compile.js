@@ -1,7 +1,7 @@
 const { getEntitlements, hasProCookieAccess, required, supabaseUrl, authenticatedUser } = require("./_shared");
 const { mongoEnabled } = require("./_mongo");
 
-const LANGUAGE_IDS = Object.freeze({ csharp: 51, python: 71, java: 62 });
+const LANGUAGE_IDS = Object.freeze({ csharp: 51, python: 71, java: 62, javascript: 63 });
 const MAX_BODY_BYTES = 64 * 1024;
 const MAX_SOURCE_BYTES = 32 * 1024;
 const MAX_INPUT_BYTES = 8 * 1024;
@@ -134,7 +134,7 @@ module.exports = async function handler(req, res) {
 
     const cookiePro = hasProCookieAccess(req);
     const user = cookiePro ? null : await userFromCookie(req);
-    if (!user && !cookiePro) return sendJson(res, 401, { error: "Sign in again or enter your Pro PIN to run code." });
+    if (!user && !cookiePro) return sendJson(res, 401, { error: "Sign in with an active Pro membership to run code." });
     if (!cookiePro && !await hasProAccess(user.id)) return sendJson(res, 403, { error: "Pro access is required to run code." });
 
     const baseUrl = judge0BaseUrl();
@@ -143,7 +143,7 @@ module.exports = async function handler(req, res) {
       const parsed = await parseBody(req);
       if (parsed.error) return sendJson(res, 400, { error: parsed.error });
       const { language, sourceCode, stdin, expectedOutput } = parsed.body || {};
-      if (!Object.hasOwn(LANGUAGE_IDS, language)) return sendJson(res, 400, { error: "Choose C#, Python, or Java." });
+      if (!Object.hasOwn(LANGUAGE_IDS, language)) return sendJson(res, 400, { error: "Choose C#, Python, Java, or JavaScript." });
       if (!boundedText(sourceCode, MAX_SOURCE_BYTES) || !sourceCode.trim()) {
         return sendJson(res, 400, { error: "Source code is required and must be 32 KB or smaller." });
       }

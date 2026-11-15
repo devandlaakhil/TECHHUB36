@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 const { chromium } = require("playwright");
 const { createServer } = require("../server");
+const { openNavigation } = require("./helpers/navigation");
 
 async function openSite(t) {
   const server = createServer();
@@ -101,7 +102,7 @@ test("Courses NEW navigation and consented learner stories work on the homepage 
   }
   await page.setViewportSize({ width: 390, height: 844 });
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
-  await page.getByRole("button", { name: "Menu", exact: true }).click();
+  await openNavigation(page, "Learn");
   await coursesLink.click();
   await page.locator(".feedback-card").first().waitFor();
   assert.equal(await page.locator(".feedback-card").count(), feedback.length);
@@ -127,7 +128,7 @@ test("empty or unavailable learner feedback never becomes fabricated endorsement
   assert.match(await page.locator(".feedback-empty").innerText(), /No public learner stories yet/);
   assert.equal(await page.locator(".feedback-card").count(), 0);
   assert.equal(await page.locator('[data-community-feedback] [role="img"]').count(), 0);
-  assert.equal(await page.locator("#learning-paths .offering-card").count(), 10);
+  assert.equal(await page.locator("#learning-paths .home-goal-card").count(), 3);
   unavailable = true;
   await page.reload();
   await page.getByText("Learner feedback is temporarily unavailable.", { exact: true }).waitFor();

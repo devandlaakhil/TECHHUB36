@@ -1,0 +1,26 @@
+.training-filters { display:grid; grid-template-columns:minmax(0,2fr) minmax(0,1fr) auto; align-items:end; gap:14px; margin:24px 0 14px; }
+.training-filters label { display:grid; gap:7px; color:var(--ink); font-size:.88rem; font-weight:700; }
+.training-filters input, .training-filters select { width:100%; min-width:0; min-height:46px; padding:10px 12px; border:1px solid var(--line); border-radius:9px; background:var(--surface); color:var(--ink); font:inherit; }
+.training-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; }
+.training-card { display:flex; flex-direction:column; min-width:0; padding:24px; border:1px solid var(--line); border-top:3px solid #8373ef; border-radius:16px; background:var(--surface); }
+.training-card-top { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:8px; }
+.training-category { color:var(--brand); font-size:.7rem; font-weight:850; letter-spacing:.06em; text-transform:uppercase; }
+.training-format { padding:3px 8px; border:1px solid var(--line); border-radius:20px; color:var(--muted); font-size:.7rem; }
+.training-card h3 { margin:18px 0 10px; font-size:1.28rem; line-height:1.3; }
+.training-card > p { margin:0 0 18px; color:var(--muted); font-size:.92rem; }
+.training-mentor { display:flex; align-items:center; gap:11px; margin:16px 0 22px; color:var(--muted); font-size:.76rem; }
+.training-mentor strong { display:block; margin-top:2px; color:var(--ink); font-size:.95rem; }
+.training-avatar { display:grid; flex-shrink:0; width:40px; height:40px; place-items:center; border-radius:50%; background:#6152d6; color:#fff; font-size:1.05rem; font-weight:850; }
+.training-card > .training-availability { margin-top:auto; padding-top:12px; font-size:.78rem; }
+.training-card .button { width:100%; text-align:center; font-size:.87rem; overflow-wrap:anywhere; }
+.training-card .training-secondary { padding-top:14px; text-align:center; font-size:.84rem; }
+.home-topic-card .training-mentor { margin:16px 0; }
+.coaching-steps { counter-reset:coaching-step; }
+.coaching-steps .offering-card::before { content:counter(coaching-step); counter-increment:coaching-step; display:grid; width:34px; height:34px; place-items:center; border-radius:50%; background:#6152d6; color:#fff; font-weight:850; }
+.coaching-steps .offering-card h3 { margin-top:16px; }
+@media (max-width:950px) { .training-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:600px) {
+  .training-filters, .training-grid { grid-template-columns:minmax(0,1fr); }
+  .training-filters .button { justify-self:start; }
+  .training-card { padding:22px; }
+}

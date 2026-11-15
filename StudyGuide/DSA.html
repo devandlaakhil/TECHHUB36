@@ -181,6 +181,7 @@
     }
     @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
   </style>
+  <link rel="stylesheet" href="/dsa-workspace.css" />
 </head>
 <body>
   <header class="appbar">
@@ -205,13 +206,14 @@
     <header class="hero">
       <div>
         <p class="eyebrow">Learn patterns, then solve problems</p>
-        <h1>DSA Visual Lab</h1>
-        <p>A focused interview workspace: choose a problem, understand the pattern, inspect reference solutions, then write and run C#, Python, or Java against your own test input.</p>
+        <h1 id="practice-heading">DSA coding practice</h1>
+        <p id="practice-intro">Read the problem. Write your code. Run a test. Compare the solution when you are ready.</p>
       </div>
-      <div class="hero-stat" aria-live="polite"><strong><span id="completed-count">0</span>/50</strong><span>problems practiced</span></div>
     </header>
 
-    <div class="callout"><strong>How to use this page:</strong> try each problem before opening the solution. The three code versions use standard interview method signatures; node-based problems assume the usual <code>ListNode</code>, <code>TreeNode</code>, or graph <code>Node</code> types are provided by the platform.</div>
+    <details class="dsa-guide">
+    <summary>Pattern guide &amp; problem-solving method</summary>
+    <div class="callout"><strong>How to use this page:</strong> try each problem before opening the solution. Reference methods may need imports, a main function, or node definitions before they can run.</div>
 
     <nav class="nav" aria-label="DSA guide sections">
       <a href="#method">Problem-solving method</a>
@@ -248,11 +250,22 @@
       </div>
     </section>
 
-    <section id="top50">
-      <h2>3. Practice workspace</h2>
-      <p class="lead">Choose a question on the left. The workspace keeps its pattern, trace, reference implementations, and compiler together. Code is sent to Judge0 only when you choose Run.</p>
+    </details>
+    <section id="top50" aria-label="Coding workspace">
+      <h2>Problem &amp; code workspace</h2>
+      <p class="lead" id="workspace-access">First 10 DSA problems are free. Pro unlocks the complete set and remote code execution. Your drafts stay in this tab.</p>
       <div class="practice-shell">
-        <aside class="question-sidebar" aria-label="Problem navigator">
+        <nav class="practice-toolbar" aria-label="Coding workspace controls">
+          <button type="button" class="action-button" id="toggle-problems" aria-expanded="false" aria-controls="problem-navigator">Problems</button>
+          <span id="problem-position" aria-live="polite"></span>
+          <button type="button" class="action-button" id="previous-problem">Previous</button>
+          <button type="button" class="action-button" id="next-problem">Next</button>
+          <button type="button" class="action-button" id="toggle-description" aria-pressed="false">Hide problem</button>
+          <button type="button" class="action-button" id="toggle-solution" aria-pressed="false" aria-controls="reference-solution">Solution</button>
+          <a id="interview-topic-link" href="/Subject-QA.html?topic=Data%20Structures%20%26%20Algorithms">Interview Q&amp;A</a>
+          <a id="practice-concepts-link" href="/Concepts.html?category=DSA">Learn concepts</a>
+        </nav>
+        <aside id="problem-navigator" class="question-sidebar" aria-label="Problem navigator" hidden>
           <div class="sidebar-head">
             <h3>Problem set</h3>
             <label class="small" for="problem-search">Search questions</label>
@@ -261,11 +274,12 @@
             <select id="pattern-filter" aria-label="Filter problems by pattern"><option value="all">All patterns</option></select>
             <div class="sidebar-count"><span id="problem-count" aria-live="polite"></span><span id="saved-status" class="saved-status">Progress saved on this device</span></div>
             <div class="progress-track" aria-label="Practice progress"><div id="progress-fill" class="progress-fill"></div></div>
+            <p class="saved-status" aria-live="polite"><span id="completed-count">0</span> practiced</p>
           </div>
           <div id="problem-list" class="problem-list"></div>
           <p id="empty-results" class="empty">No problems match. Try another title or pattern.</p>
         </aside>
-        <article id="active-problem" class="active-problem" aria-live="polite">
+        <article id="active-problem" class="active-problem" aria-label="Active coding problem">
           <div class="active-content"><p>Select a problem to start practicing.</p></div>
         </article>
       </div>
@@ -276,10 +290,11 @@
       <p><a href="index.html">← Back to all study guides</a></p>
     </footer>
   </main>
+  <script src="/coding-runner.js"></script>
   <script>
     const problems = [
       {
-        title: "Two Sum", pattern: "Arrays & Hashing", visual: "nums = [2, 7, 11, 15], target = 9  →  seen {2:0}  →  7 needs 2  →  [0,1]", complexity: "O(n) time · O(n) space",
+        title: "Two Sum", pattern: "Arrays & Hashing", prompt: "Given an integer array and a target, return the zero-based indices of two different elements whose sum equals the target. Do not reuse the same element. This practice version returns an empty result if no pair exists.", visual: "nums = [2, 7, 11, 15], target = 9  →  seen {2:0}  →  7 needs 2  →  [0,1]", complexity: "O(n) time · O(n) space",
         csharp: `public int[] TwoSum(int[] nums, int target) {
     var seen = new Dictionary<int, int>();
     for (int i = 0; i < nums.Length; i++) {
@@ -307,7 +322,7 @@
 }`
       },
       {
-        title: "Contains Duplicate", pattern: "Arrays & Hashing", visual: "[4, 1, 4]  →  seen {4,1}  →  second 4 already exists  →  true", complexity: "O(n) time · O(n) space",
+        title: "Contains Duplicate", pattern: "Arrays & Hashing", prompt: "Given an integer array, return true if any value occurs at least twice. Return false when every value is distinct.", visual: "[4, 1, 4]  →  seen {4,1}  →  second 4 already exists  →  true", complexity: "O(n) time · O(n) space",
         csharp: `public bool ContainsDuplicate(int[] nums) =>
     nums.Length != nums.Distinct().Count();`,
         python: `def contains_duplicate(nums):
@@ -319,7 +334,7 @@
 }`
       },
       {
-        title: "Valid Anagram", pattern: "Arrays & Hashing", visual: "s = listen, t = silent  →  count letters  →  same frequency for every letter  →  true", complexity: "O(n) time · O(1) alphabet space",
+        title: "Valid Anagram", pattern: "Arrays & Hashing", prompt: "Given two lowercase English strings, determine whether one is an anagram of the other: every character must have the same frequency in both strings.", visual: "s = listen, t = silent  →  count letters  →  same frequency for every letter  →  true", complexity: "O(n) time · O(1) alphabet space",
         csharp: `public bool IsAnagram(string s, string t) {
     if (s.Length != t.Length) return false;
     var count = new int[26];
@@ -346,7 +361,7 @@
 }`
       },
       {
-        title: "Group Anagrams", pattern: "Arrays & Hashing", visual: "eat, tea, tan, ate  →  keys a1e1t1 / a1n1t1  →  group by equal key", complexity: "O(n·k log k) time · O(nk) space",
+        title: "Group Anagrams", pattern: "Arrays & Hashing", prompt: "Group an array of lowercase English words so that words with the same character frequencies appear together. Group order is not important; choose a deterministic print order for your custom test.", visual: "eat, tea, tan, ate  →  keys a1e1t1 / a1n1t1  →  group by equal key", complexity: "O(n·k log k) time · O(nk) space",
         csharp: `public IList<IList<string>> GroupAnagrams(string[] strs) {
     var groups = new Dictionary<string, IList<string>>();
     foreach (string s in strs) {
@@ -373,7 +388,7 @@ def group_anagrams(strs):
 }`
       },
       {
-        title: "Top K Frequent Elements", pattern: "Arrays & Hashing", visual: "[1,1,1,2,2,3]  →  counts 1:3, 2:2, 3:1  →  top 2 = [1,2]", complexity: "O(n log k) time · O(n) space",
+        title: "Top K Frequent Elements", pattern: "Arrays & Hashing", prompt: "Given an integer array and a valid k, return the k most frequent distinct values. Use a test with an unambiguous frequency cutoff and define an output order before comparing printed results.", visual: "[1,1,1,2,2,3]  →  counts 1:3, 2:2, 3:1  →  top 2 = [1,2]", complexity: "O(n log k) time · O(n) space",
         csharp: `public int[] TopKFrequent(int[] nums, int k) =>
     nums.GroupBy(x => x).OrderByDescending(g => g.Count())
         .Take(k).Select(g => g.Key).ToArray();`,
@@ -390,7 +405,7 @@ def top_k_frequent(nums, k):
 }`
       },
       {
-        title: "Product of Array Except Self", pattern: "Arrays & Hashing", visual: "[1,2,3,4]  →  prefix [1,1,2,6] × suffix [24,12,4,1]  →  [24,12,8,6]", complexity: "O(n) time · O(1) extra space (output excluded)",
+        title: "Product of Array Except Self", pattern: "Arrays & Hashing", prompt: "Return an array whose value at each index is the product of all input values except the value at that index. Do not use division. Account for zeros and assume products fit the chosen integer type.", visual: "[1,2,3,4]  →  prefix [1,1,2,6] × suffix [24,12,4,1]  →  [24,12,8,6]", complexity: "O(n) time · O(1) extra space (output excluded)",
         csharp: `public int[] ProductExceptSelf(int[] nums) {
     int[] ans = new int[nums.Length];
     int p = 1;
@@ -416,7 +431,7 @@ def top_k_frequent(nums, k):
 }`
       },
       {
-        title: "Maximum Subarray", pattern: "Arrays & Hashing", visual: "[-2,1,-3,4,-1,2,1,-5,4]  →  restart/extend  →  best [4,-1,2,1] = 6", complexity: "O(n) time · O(1) space",
+        title: "Maximum Subarray", pattern: "Arrays & Hashing", prompt: "Given a nonempty integer array, find the largest sum of any contiguous nonempty subarray. Return the sum, including when every number is negative.", visual: "[-2,1,-3,4,-1,2,1,-5,4]  →  restart/extend  →  best [4,-1,2,1] = 6", complexity: "O(n) time · O(1) space",
         csharp: `public int MaxSubArray(int[] nums) {
     int cur = nums[0], best = nums[0];
     for (int i = 1; i < nums.Length; i++) {
@@ -441,7 +456,7 @@ def top_k_frequent(nums, k):
 }`
       },
       {
-        title: "Valid Palindrome", pattern: "Two Pointers", visual: "A man, a plan, a canal: Panama  →  skip punctuation  →  compare inward  →  true", complexity: "O(n) time · O(1) space",
+        title: "Valid Palindrome", pattern: "Two Pointers", prompt: "Determine whether a string reads the same forward and backward after ignoring non-alphanumeric characters and letter case. Use ASCII letters and digits for cross-language examples.", visual: "A man, a plan, a canal: Panama  →  skip punctuation  →  compare inward  →  true", complexity: "O(n) time · O(1) space",
         csharp: `public bool IsPalindrome(string s) {
     int l=0, r=s.Length-1;
     while (l<r) {
@@ -465,7 +480,7 @@ def top_k_frequent(nums, k):
 }`
       },
       {
-        title: "Two Sum II — Sorted Input", pattern: "Two Pointers", visual: "[2,7,11,15], target 9  →  2+15 too large: R--  →  2+7=9", complexity: "O(n) time · O(1) space",
+        title: "Two Sum II — Sorted Input", pattern: "Two Pointers", prompt: "Given an ascending integer array and a target with a valid pair, return the one-based indices of two different elements whose sum equals the target. Use constant extra space.", visual: "[2,7,11,15], target 9  →  2+15 too large: R--  →  2+7=9", complexity: "O(n) time · O(1) space",
         csharp: `public int[] TwoSum(int[] numbers, int target) {
     int l=0,r=numbers.Length-1;
     while(l<r) {
@@ -494,7 +509,7 @@ def top_k_frequent(nums, k):
 }`
       },
       {
-        title: "3Sum", pattern: "Two Pointers", visual: "sort [-1,0,1,2,-1,-4]  →  fix -1  →  L+R scan  →  [-1,-1,2], [-1,0,1]", complexity: "O(n²) time · O(1) extra space (excluding output)",
+        title: "3Sum", pattern: "Two Pointers", prompt: "Find all unique triplets of values whose sum is zero, using three distinct input positions. Do not return duplicate triplets. Choose a deterministic order when printing results for a custom test.", visual: "sort [-1,0,1,2,-1,-4]  →  fix -1  →  L+R scan  →  [-1,-1,2], [-1,0,1]", complexity: "O(n²) time · O(1) extra space (excluding output)",
         csharp: `public IList<IList<int>> ThreeSum(int[] nums) {
     Array.Sort(nums);
     var ans = new List<IList<int>>();
@@ -1542,7 +1557,7 @@ class LRUCache:
       }
     ];
 
-    const langLabels = { csharp: "C#", python: "Python", java: "Java" };
+    const langLabels = { csharp: "C#", python: "Python", java: "Java", javascript: "JavaScript" };
     const patternFilter = document.getElementById("pattern-filter");
     const searchInput = document.getElementById("problem-search");
     const list = document.getElementById("problem-list");
@@ -1552,39 +1567,76 @@ class LRUCache:
     const completedCount = document.getElementById("completed-count");
     const progressFill = document.getElementById("progress-fill");
     const savedStatus = document.getElementById("saved-status");
-    const storageKey = "dsa-visual-lab-completed-v1";
+    const topic = new URLSearchParams(location.search).get("topic");
+    const storageKey = topic ? `kr7-qa-practice:${topic}` : "dsa-visual-lab-completed-v1";
     let completed = new Set();
-    let activeIndex = 0;
+    let activeIndex = -1;
+    let descriptionHidden = false;
+    let solutionVisible = false;
+    let pinItem = null;
+    const drafts = new Map();
+    const navigatorPanel = document.getElementById("problem-navigator");
+    const navigatorToggle = document.getElementById("toggle-problems");
+    const previousButton = document.getElementById("previous-problem");
+    const nextButton = document.getElementById("next-problem");
+    const descriptionToggle = document.getElementById("toggle-description");
+    const solutionToggle = document.getElementById("toggle-solution");
+    const runner = KR7Coding.createRunner({
+      onOutput(text, state) {
+        const output = workspace.querySelector("#run-output");
+        if (output) { output.textContent = text; output.dataset.state = state; }
+      },
+      onBusy(busy) {
+        const button = workspace.querySelector('[data-action="run"]');
+        if (button) { button.disabled = busy; button.textContent = busy ? "Running..." : "Run code"; }
+      },
+    });
 
-    try {
-      const saved = JSON.parse(localStorage.getItem(storageKey) || "[]");
-      if (Array.isArray(saved)) completed = new Set(saved.filter(i => Number.isInteger(i) && i >= 0 && i < problems.length));
-    } catch (error) {
-      savedStatus.textContent = "Progress storage unavailable";
-    }
-
-    const patterns = [...new Set(problems.map(p => p.pattern))];
-    for (const pattern of patterns) {
-      const option = document.createElement("option");
-      option.value = pattern;
-      option.textContent = pattern;
-      patternFilter.append(option);
+    function loadProgress() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || "[]");
+        if (Array.isArray(saved)) completed = new Set(saved.filter(i => Number.isInteger(i) && i >= 0 && i < problems.length));
+      } catch (error) {
+        savedStatus.textContent = "Progress storage unavailable";
+      }
     }
 
     function escapeHtml(value) {
-      return value.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+      return String(value ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
     }
 
     function updateProgress() {
       completedCount.textContent = completed.size;
-      progressFill.style.width = `${(completed.size / problems.length) * 100}%`;
+      progressFill.style.width = `${problems.length ? (completed.size / problems.length) * 100 : 0}%`;
     }
 
     let selectedLanguage = "csharp";
     let editorCodeByLanguage = {};
 
     function starterFor(language, problem) {
-      if (problem.title === "Two Sum") {
+      if (language === "javascript") {
+        if (!problem.qa && problem.title === "Two Sum") return `const fs = require("fs");
+const lines = fs.readFileSync(0, "utf8").trim().split(/\\r?\\n/);
+const nums = lines[0].trim().split(/\\s+/).map(Number);
+const target = Number(lines[1]);
+const seen = new Map();
+let answer = [];
+for (let i = 0; i < nums.length; i++) {
+  if (seen.has(target - nums[i])) {
+    answer = [seen.get(target - nums[i]), i];
+    break;
+  }
+  seen.set(nums[i], i);
+}
+console.log(JSON.stringify(answer));
+`;
+        return `const fs = require("fs");
+const input = fs.readFileSync(0, "utf8");
+// Read input, implement your solution, and print the result.
+throw new Error("Implement the solution");
+`;
+      }
+      if (!problem.qa && problem.title === "Two Sum") {
         if (language === "python") return `nums = list(map(int, input().split()))
 target = int(input())
 seen = {}
@@ -1624,7 +1676,7 @@ class Program
 {
     static void Main()
     {
-        var nums = Console.ReadLine().Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
+        var nums = Console.ReadLine().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).Select(int.Parse).ToArray();
         var target = int.Parse(Console.ReadLine());
         var seen = new Dictionary<int, int>();
         for (var i = 0; i < nums.Length; i++)
@@ -1645,7 +1697,7 @@ class Program
 
 def main():
     data = sys.stdin.read()
-    # Implement ${problem.title}; read input from data and print the result.
+    # Read input from data, implement your solution, and print the result.
     raise NotImplementedError("Implement the solution")
 
 if __name__ == "__main__":
@@ -1656,7 +1708,7 @@ if __name__ == "__main__":
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        // Implement ${problem.title}; read from scanner and print the result.
+        // Read from scanner, implement your solution, and print the result.
         throw new UnsupportedOperationException("Implement the solution");
     }
 }`;
@@ -1667,150 +1719,202 @@ class Program
     static void Main()
     {
         var input = Console.In.ReadToEnd();
-        // Implement ${problem.title}; read from input and write the result.
+        // Read from input, implement your solution, and write the result.
         throw new NotImplementedException("Implement the solution");
     }
 }`;
     }
 
+    function saveDraft() {
+      const editor = workspace.querySelector("#code-editor");
+      if (!editor || activeIndex < 0) return;
+      editorCodeByLanguage[selectedLanguage] = editor.value;
+      drafts.set(activeIndex, {
+        codes: { ...editorCodeByLanguage },
+        stdin: workspace.querySelector("#test-input").value,
+        expected: workspace.querySelector("#test-expected").value,
+      });
+    }
+
+    function updateLineNumbers() {
+      const editor = workspace.querySelector("#code-editor");
+      const gutter = workspace.querySelector("#code-line-numbers");
+      if (!editor || !gutter) return;
+      gutter.textContent = Array.from({ length: editor.value.split("\n").length }, (_, i) => i + 1).join("\n");
+      gutter.style.height = `${editor.clientHeight}px`;
+      gutter.scrollTop = editor.scrollTop;
+    }
+
+    function updateEditorLanguage() {
+      const extensions = { csharp: "Program.cs", python: "solution.py", java: "Main.java", javascript: "solution.js" };
+      workspace.querySelector(".editor-language").value = selectedLanguage;
+      workspace.querySelector(".editor-label").textContent = extensions[selectedLanguage];
+      workspace.querySelector("#code-editor").value = editorCodeByLanguage[selectedLanguage];
+      updateLineNumbers();
+    }
+
+    function visibleIndices() {
+      return [...list.children].flatMap((item, index) => item.hidden ? [] : [index]);
+    }
+
+    function updateControls() {
+      const visible = visibleIndices();
+      const position = visible.indexOf(activeIndex);
+      previousButton.disabled = position <= 0;
+      nextButton.disabled = position < 0 || position >= visible.length - 1;
+      document.getElementById("problem-position").textContent = position < 0
+        ? "No matching problems" : `${position + 1} / ${visible.length}`;
+      const locked = !problems[activeIndex] || problems[activeIndex].locked;
+      descriptionToggle.disabled = locked;
+      solutionToggle.disabled = locked;
+      descriptionToggle.setAttribute("aria-pressed", String(descriptionHidden));
+      descriptionToggle.textContent = descriptionHidden ? "Show problem" : "Hide problem";
+      solutionToggle.setAttribute("aria-pressed", String(solutionVisible));
+    }
+
     function renderProblem(index) {
+      if (!Number.isInteger(index) || !problems[index]) return;
+      saveDraft();
+      runner.cancel();
+      if (pinItem && pinItem.index !== index) lockPinItem();
       activeIndex = index;
       const problem = problems[index];
-      editorCodeByLanguage = Object.fromEntries(Object.keys(langLabels).map(language => [language, starterFor(language, problem)]));
+      solutionVisible = false;
+      const draft = drafts.get(index);
+      editorCodeByLanguage = draft?.codes ||
+        Object.fromEntries(Object.keys(langLabels).map(language => [language, starterFor(language, problem)]));
       const isComplete = completed.has(index);
-      workspace.innerHTML = `
-        <header class="active-head">
-          <div class="active-overline"><span>PROBLEM ${String(index + 1).padStart(2, "0")} / ${problems.length}</span><span>${escapeHtml(problem.pattern)}</span></div>
-          <div class="active-title-row">
-            <h3>${escapeHtml(problem.title)}</h3>
-            <div class="active-actions">
-              <button class="action-button" type="button" data-action="complete" aria-pressed="${isComplete}">${isComplete ? "✓ Practiced" : "Mark practiced"}</button>
-              <button class="action-button" type="button" data-action="copy">Copy solution</button>
+      const title = escapeHtml(problem.title);
+      const resource = problem.qa ? `subject:${topic}:${problem.id}` : `guide:DSA.html:${index}`;
+      const pinUrl = problem.qa
+        ? `/api/questions?${new URLSearchParams({ topic, questionId: problem.id })}`
+        : `/api/serve-page?${new URLSearchParams({ page: "DSA.html", item: String(index) })}`;
+      if (problem.locked) {
+        workspace.innerHTML = `<section class="locked-problem" data-pro-item>
+          <h3>${title}</h3><p>This problem is locked. Other Pro problems stay locked when you open this item.</p>
+          <button type="button" class="action-button" data-pro-unlock data-pro-resource="${escapeHtml(resource)}"
+            data-pin-kind="${problem.qa ? "practice" : "guide"}" data-pin-url="${escapeHtml(pinUrl)}">Enter PIN for this item</button>
+          <a class="button" href="/Membership.html">View Pro access</a>
+          <p>Remote code execution requires a Pro membership, not an item PIN.</p></section>`;
+      } else {
+        const demo = !problem.qa && index === 0;
+        workspace.innerHTML = `
+          <header class="active-head">
+            <div class="active-overline"><span>PROBLEM ${String(index + 1).padStart(2, "0")} / ${problems.length}</span><span>${escapeHtml(problem.pattern)}</span></div>
+            <div class="active-title-row"><h3 tabindex="-1">${title}</h3>
+              ${pinItem?.index === index ? '<button class="action-button" type="button" data-action="lock">Close and lock</button>' : ""}
+              <button class="action-button" type="button" data-action="complete" aria-pressed="${isComplete}">${isComplete ? "Practiced" : "Mark practiced"}</button>
             </div>
-          </div>
-        </header>
-        <div class="active-content">
-          <div class="problem-meta"><span class="tag">${escapeHtml(problem.pattern)}</span><span class="tag green">${escapeHtml(problem.complexity)}</span></div>
-          <div class="problem-statement">
-            <p><strong>Challenge:</strong> Implement <strong>${escapeHtml(problem.title)}</strong>. Explain the key invariant, handle important edge cases, and aim for the stated time and space complexity.</p>
-            <p><strong>Trace:</strong> ${escapeHtml(problem.visual)}</p>
-          </div>
-          <div class="workspace-grid">
-            <section class="workspace-panel" aria-label="Reference solution">
-              <div class="panel-heading"><strong>Reference solution</strong><span>Compare after attempting</span></div>
-              <div class="solution-head">
-                <div class="language-tabs" role="group" aria-label="Reference solution language">
-                  ${Object.entries(langLabels).map(([key, label], j) => `<button class="language-button" type="button" data-lang="${key}" aria-pressed="${j === 0}">${label}</button>`).join("")}
+          </header>
+          <div class="active-content"><div class="workspace-grid${descriptionHidden ? " editor-only" : ""}">
+            <section class="workspace-panel problem-description" aria-label="Problem description"${descriptionHidden ? " hidden" : ""}>
+              <div class="panel-heading"><strong id="description-label">Description</strong><span>Read, attempt, then compare</span></div>
+              <div class="description-scroll">
+                <div class="description-body" id="problem-description-body">
+                  <div class="problem-meta"><span class="tag">${escapeHtml(problem.pattern)}</span>${problem.complexity ? `<span class="tag green">${escapeHtml(problem.complexity)}</span>` : ""}</div>
+                  <h4>Problem statement</h4>
+                  <p>${problem.qa ? title : problem.prompt ? escapeHtml(problem.prompt) : `Implement <strong>${title}</strong>. Use the trace to define the expected behavior, explain your invariant, and handle edge cases.`}</p>
+                  ${problem.visual ? `<h4>Example &amp; trace</h4><pre>${escapeHtml(problem.visual)}</pre>` : ""}
+                  <h4>Before you run</h4>
+                  <p>Write a complete program that reads standard input and prints the result. Enter the matching expected output below the editor.</p>
+                  <p>${demo ? "The Two Sum demo reads space-separated numbers on line 1 and the target on line 2. It prints the two indices as [0,1]." : "Define an input format for your implementation. Reference methods and web-framework snippets are not standalone programs; add the required entry point, imports, and data types."}</p>
+                  <h4>Edge cases to consider</h4><p>Check empty or minimal input, repeated values, boundaries, and inputs with no matching result when the problem permits them.</p>
                 </div>
+                <section id="reference-solution" hidden aria-label="Reference solution">
+                  ${problem.qa ? `<div class="description-body"><h4>Interview answer</h4><p>${escapeHtml(problem.answer)}</p></div>` : ""}
+                  <div class="solution-head">
+                    <div class="language-tabs" role="group" aria-label="Reference solution language">
+                      ${problem.qa ? "" : ["csharp", "python", "java"].map((key, j) => `<button class="language-button" type="button" data-lang="${key}" aria-pressed="${j === 0}">${langLabels[key]}</button>`).join("")}
+                    </div>
+                    <button class="action-button solution-copy" type="button" data-action="copy">Copy reference</button>
+                  </div>
+                  <pre class="solution-code"><code>${escapeHtml(problem.qa ? problem.reference : problem.csharp)}</code></pre>
+                  <div class="runner-note">Reference only: copying a method does not add a runnable entry point or translate it into the editor language.</div>
+                </section>
               </div>
-              <pre class="solution-code"><code>${escapeHtml(problem.csharp)}</code></pre>
-              <div class="runner-note">Solutions use standard interview method signatures. Read, compare, and copy; these are not sent to a compiler.</div>
             </section>
             <section class="workspace-panel" aria-label="Remote code runner">
-              <div class="panel-heading"><strong>Code playground</strong><span>Compile and run</span></div>
-              <div class="editor-topbar"><label class="editor-label" for="code-editor">solution.cs</label><select class="editor-language" aria-label="Runner language"><option value="csharp">C#</option><option value="python">Python</option><option value="java">Java</option></select></div>
-              <textarea id="code-editor" class="code-editor" spellcheck="false" aria-label="Code editor">${escapeHtml(editorCodeByLanguage[selectedLanguage])}</textarea>
+              <div class="editor-topbar"><label class="editor-label" for="code-editor">Program.cs</label>
+                <select class="editor-language" aria-label="Runner language">${Object.entries(langLabels).map(([key, label]) => `<option value="${key}">${label}</option>`).join("")}</select></div>
+              <div class="editor-body"><pre class="line-numbers" id="code-line-numbers" aria-hidden="true"></pre><textarea id="code-editor" class="code-editor" wrap="off" spellcheck="false" autocapitalize="off" aria-label="Code editor" aria-describedby="runner-help"></textarea></div>
+              <div class="runner-controls"><button class="run-button" type="button" data-action="run">Run code</button><button class="action-button reset-button" type="button" data-action="reset">Reset code</button><span class="saved-status" id="runner-help">Ctrl / Cmd + Enter to run. Pro required.</span></div>
+              <div class="panel-heading"><strong>Test case</strong><span>One custom test, not hidden judge tests</span></div>
               <div class="testcase-grid">
-                <label for="test-input">Standard input<textarea id="test-input" spellcheck="false">${index === 0 ? "2 7 11 15\n9" : ""}</textarea></label>
-                <label for="test-expected">Expected output<textarea id="test-expected" spellcheck="false">${index === 0 ? "[0,1]" : ""}</textarea></label>
+                <label for="test-input">Standard input<textarea id="test-input" spellcheck="false">${escapeHtml(draft?.stdin ?? (demo ? "2 7 11 15\n9" : ""))}</textarea></label>
+                <label for="test-expected">Expected output<textarea id="test-expected" spellcheck="false">${escapeHtml(draft?.expected ?? (demo ? "[0,1]" : ""))}</textarea></label>
               </div>
-              <div class="runner-controls"><button class="run-button" type="button" data-action="run">▶ Run sample</button><button class="action-button reset-button" type="button" data-action="reset">Reset starter</button><span class="saved-status">Sample uses stdin and expected output.</span></div>
-              <p class="runner-notice">When you click Run, your code and test input are sent to the Judge0 compiler service for execution. Do not include secrets or personal data.</p>
-              <pre class="run-output" id="run-output" role="status" aria-live="polite">Ready. Choose a language, edit the full program, and run it against the sample.</pre>
+              <div class="panel-heading"><strong>Test result</strong><span>Real compiler output</span></div>
+              <pre class="run-output" id="run-output" role="status" aria-live="polite">Ready. ${demo ? "Run the working Two Sum demo or change the code." : "Implement the solution and define your test input and expected output."}</pre>
+              <p class="runner-notice">Run sends your code and test input to Judge0. Do not include secrets or personal data. Browser components and SQL require their own runtimes; this editor runs standalone C#, Python, Java, or JavaScript programs.</p>
             </section>
-          </div>
-        </div>`;
-      workspace.querySelector(".editor-language").value = selectedLanguage;
+          </div></div>`;
+        updateEditorLanguage();
+      }
       list.querySelectorAll(".problem").forEach((item, i) => {
-        item.open = i === index;
         item.setAttribute("aria-current", String(i === index));
       });
+      updateControls();
     }
 
-    function formatCompilerResult(result) {
-      const labels = {
-        fail: "FAIL — output did not match",
-        compile_error: "COMPILE ERROR",
-        runtime_error: "RUNTIME ERROR",
-        timed_out: "TIME LIMIT EXCEEDED",
-        error: "COMPILER ERROR"
-      };
-      const parts = [result.state === "pass" ? "PASS" : labels[result.state] || result.status];
-      if (result.compileOutput) parts.push(`Compiler output:\n${result.compileOutput}`);
-      if (result.stderr) parts.push(`Standard error:\n${result.stderr}`);
-      if (result.stdout || result.state === "fail") parts.push(`Actual output:\n${result.stdout}`);
-      if (result.time) parts.push(`Time: ${result.time}s`);
-      if (result.memory !== null) parts.push(`Memory: ${result.memory} KB`);
-      if (result.state === "pass") parts.push(`Expected output:\n${workspace.querySelector("#test-expected").value}`);
-      return parts.join("\n\n");
-    }
-
-    async function runCode() {
-      const runButton = workspace.querySelector('[data-action="run"]');
-      const output = workspace.querySelector("#run-output");
-      const expectedOutput = workspace.querySelector("#test-expected").value;
-      if (!expectedOutput.trim()) {
-        output.dataset.state = "fail";
-        output.textContent = "Enter the expected output for this test case before running.";
-        return;
-      }
-      runButton.disabled = true;
-      output.dataset.state = "";
-      output.textContent = "Checking compiler configuration...";
-      try {
-        const configResponse = await fetch("/api/config", { cache: "no-store" });
-        if (!configResponse.ok) throw new Error("Could not check compiler configuration. Try again later.");
-        const config = await configResponse.json();
-        if (!config.compilerConfigured) throw new Error("Compiler is not configured on this deployment yet. The owner must configure Judge0 before code can run.");
-        output.textContent = "Submitting to Judge0...";
-        const submissionResponse = await fetch("/api/compile", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            language: selectedLanguage,
-            sourceCode: workspace.querySelector("#code-editor").value,
-            stdin: workspace.querySelector("#test-input").value,
-            expectedOutput
-          })
-        });
-        const submission = await submissionResponse.json();
-        if (!submissionResponse.ok) throw new Error(submission.error || "Compiler request was rejected.");
-        const deadline = Date.now() + 20000;
-        let result = submission;
-        while (result.state === "pending" && Date.now() < deadline) {
-          await new Promise(resolve => setTimeout(resolve, 750));
-          const pollResponse = await fetch(`/api/compile?token=${encodeURIComponent(submission.token)}`);
-          result = await pollResponse.json();
-          if (!pollResponse.ok) throw new Error(result.error || "Could not retrieve compiler result.");
-        }
-        if (result.state === "pending") {
-          output.textContent = "The submission is still queued. Please run again in a moment.";
-          return;
-        }
-        output.dataset.state = result.state === "pass" ? "pass" : "fail";
-        output.textContent = formatCompilerResult(result);
-      } catch (error) {
-        output.dataset.state = "fail";
-        output.textContent = error.message || "Compiler request could not be completed.";
-      } finally {
-        runButton.disabled = false;
+    function selectProblem(index, push = true) {
+      if (!problems[index]) return;
+      renderProblem(index);
+      navigatorPanel.hidden = true;
+      navigatorToggle.setAttribute("aria-expanded", "false");
+      if (push) {
+        const url = new URL(location.href);
+        url.searchParams.set("problem", String(index + 1));
+        if (topic) url.searchParams.set("question", problems[index].id);
+        history.pushState(null, "", url);
       }
     }
 
-    problems.forEach((problem, i) => {
-      const details = document.createElement("details");
-      details.className = "problem";
-      details.dataset.pattern = problem.pattern;
-      details.dataset.search = `${problem.title} ${problem.pattern}`.toLowerCase();
-      details.innerHTML = `<summary aria-label="Open problem ${i + 1}: ${escapeHtml(problem.title)}">
-        <span class="problem-index">${String(i + 1).padStart(2, "0")}</span>
-        <span><span class="problem-title">${escapeHtml(problem.title)}</span><br><span class="problem-pattern">${escapeHtml(problem.pattern)}</span></span>
-      </summary>`;
-      details.addEventListener("toggle", () => {
-        if (details.open) renderProblem(i);
+    function runCode() {
+      if (!workspace.querySelector("#code-editor")) return;
+      return runner.run({
+        language: selectedLanguage,
+        sourceCode: workspace.querySelector("#code-editor").value,
+        stdin: workspace.querySelector("#test-input").value,
+        expectedOutput: workspace.querySelector("#test-expected").value,
       });
-      list.append(details);
-    });
+    }
+
+    function buildProblemList() {
+      list.replaceChildren();
+      patternFilter.innerHTML = '<option value="all">All patterns</option>';
+      for (const pattern of new Set(problems.map(problem => problem.pattern))) {
+        const option = document.createElement("option");
+        option.value = pattern;
+        option.textContent = pattern;
+        patternFilter.append(option);
+      }
+      problems.forEach((problem, i) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "problem";
+        button.dataset.pattern = problem.pattern;
+        button.dataset.search = `${problem.title} ${problem.pattern}`.toLowerCase();
+        button.innerHTML = problemListMarkup(problem, i);
+        list.append(button);
+      });
+    }
+
+    function problemListMarkup(problem, index) {
+      return `<span class="problem-index">${String(index + 1).padStart(2, "0")}</span>
+        <span><span class="problem-title">${escapeHtml(problem.title)}</span><span class="problem-pattern">${escapeHtml(problem.pattern)}${problem.locked ? " - Pro" : ""}</span></span>`;
+    }
+
+    function lockPinItem() {
+      const { index, problem } = pinItem;
+      problems[index] = problem;
+      drafts.delete(index);
+      const item = list.children[index];
+      if (item) {
+        item.dataset.search = `${problem.title} ${problem.pattern}`.toLowerCase();
+        item.innerHTML = problemListMarkup(problem, index);
+      }
+      pinItem = null;
+    }
 
     function filterProblems() {
       const query = searchInput.value.trim().toLowerCase();
@@ -1826,17 +1930,18 @@ class Program
       empty.style.display = visible ? "none" : "block";
       if (list.children[activeIndex]?.hidden && visible) {
         const nextIndex = [...list.children].findIndex(item => !item.hidden);
-        renderProblem(nextIndex);
+        selectProblem(nextIndex);
       }
+      updateControls();
     }
 
     patternFilter.addEventListener("change", filterProblems);
     searchInput.addEventListener("input", filterProblems);
     list.addEventListener("click", event => {
-      const details = event.target.closest(".problem");
-      if (!details) return;
-      const index = [...list.children].indexOf(details);
-      renderProblem(index);
+      const button = event.target.closest(".problem");
+      if (!button) return;
+      selectProblem([...list.children].indexOf(button));
+      workspace.querySelector("h3")?.focus({ preventScroll: true });
     });
     workspace.addEventListener("click", async event => {
       const button = event.target.closest("button[data-action], button[data-lang]");
@@ -1854,42 +1959,189 @@ class Program
           savedStatus.textContent = "Could not save progress";
         }
         updateProgress();
-        renderProblem(activeIndex);
+        button.textContent = completed.has(activeIndex) ? "Practiced" : "Mark practiced";
+        button.setAttribute("aria-pressed", String(completed.has(activeIndex)));
       } else if (button.dataset.action === "reset") {
+        runner.cancel();
         editorCodeByLanguage[selectedLanguage] = starterFor(selectedLanguage, problems[activeIndex]);
         workspace.querySelector("#code-editor").value = editorCodeByLanguage[selectedLanguage];
         workspace.querySelector("#run-output").textContent = "Starter restored. Edit the program and expected output, then run.";
         delete workspace.querySelector("#run-output").dataset.state;
+        updateLineNumbers();
       } else if (button.dataset.action === "run") {
         runCode();
+      } else if (button.dataset.action === "lock" && pinItem) {
+        lockPinItem();
+        renderProblem(activeIndex);
       } else if (button.dataset.action === "copy") {
         const code = workspace.querySelector(".solution-code code").textContent;
         try {
           await navigator.clipboard.writeText(code);
           button.textContent = "Copied";
-          setTimeout(() => { button.textContent = "Copy solution"; }, 1200);
+          setTimeout(() => { button.textContent = "Copy reference"; }, 1200);
         } catch (error) {
-          button.textContent = "Select code to copy";
-          setTimeout(() => { button.textContent = "Copy solution"; }, 1600);
+          const range = document.createRange();
+          range.selectNodeContents(workspace.querySelector(".solution-code code"));
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+          button.textContent = "Selected: Ctrl/Cmd+C to copy";
         }
       }
     });
     workspace.addEventListener("input", event => {
-      if (event.target.id === "code-editor") editorCodeByLanguage[selectedLanguage] = event.target.value;
+      if (event.target.id === "code-editor") {
+        editorCodeByLanguage[selectedLanguage] = event.target.value;
+        updateLineNumbers();
+      }
     });
     workspace.addEventListener("change", event => {
       if (event.target.matches(".editor-language")) {
+        saveDraft();
+        runner.cancel();
         selectedLanguage = event.target.value;
-        const extensions = { csharp: "solution.cs", python: "solution.py", java: "Main.java" };
-        workspace.querySelector(".editor-label").textContent = extensions[selectedLanguage];
-        workspace.querySelector("#code-editor").value = editorCodeByLanguage[selectedLanguage];
+        updateEditorLanguage();
+        workspace.querySelector("#run-output").textContent = "Language changed. Run again to test this program.";
+        delete workspace.querySelector("#run-output").dataset.state;
       }
     });
 
-    filterProblems();
-    updateProgress();
-    renderProblem(0);
+    workspace.addEventListener("scroll", event => {
+      if (event.target.id === "code-editor") updateLineNumbers();
+    }, true);
+    workspace.addEventListener("keydown", event => {
+      if (event.target.id === "code-editor" && (event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        event.preventDefault();
+        runCode();
+      }
+    });
+    navigatorToggle.addEventListener("click", () => {
+      navigatorPanel.hidden = !navigatorPanel.hidden;
+      navigatorToggle.setAttribute("aria-expanded", String(!navigatorPanel.hidden));
+      if (!navigatorPanel.hidden) searchInput.focus();
+    });
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && !navigatorPanel.hidden) {
+        navigatorPanel.hidden = true;
+        navigatorToggle.setAttribute("aria-expanded", "false");
+        navigatorToggle.focus();
+      }
+    });
+    document.addEventListener("click", event => {
+      if (!navigatorPanel.hidden && !navigatorPanel.contains(event.target) && !navigatorToggle.contains(event.target)) {
+        navigatorPanel.hidden = true;
+        navigatorToggle.setAttribute("aria-expanded", "false");
+      }
+    });
+    previousButton.addEventListener("click", () => {
+      const visible = visibleIndices();
+      selectProblem(visible[visible.indexOf(activeIndex) - 1]);
+    });
+    nextButton.addEventListener("click", () => {
+      const visible = visibleIndices();
+      selectProblem(visible[visible.indexOf(activeIndex) + 1]);
+    });
+    descriptionToggle.addEventListener("click", () => {
+      descriptionHidden = !descriptionHidden;
+      const panel = workspace.querySelector(".problem-description");
+      if (panel) panel.hidden = descriptionHidden;
+      workspace.querySelector(".workspace-grid")?.classList.toggle("editor-only", descriptionHidden);
+      updateControls();
+    });
+    solutionToggle.addEventListener("click", () => {
+      const solution = workspace.querySelector("#reference-solution");
+      if (!solution) return;
+      solutionVisible = !solutionVisible;
+      descriptionHidden = false;
+      workspace.querySelector(".problem-description").hidden = false;
+      workspace.querySelector(".workspace-grid").classList.remove("editor-only");
+      workspace.querySelector("#problem-description-body").hidden = solutionVisible;
+      solution.hidden = !solutionVisible;
+      workspace.querySelector("#description-label").textContent = solutionVisible ? "Solution & explanation" : "Description";
+      updateControls();
+    });
+    function indexFromUrl() {
+      const params = new URLSearchParams(location.search);
+      const questionId = params.get("question");
+      if (topic && questionId) {
+        const found = problems.findIndex(problem => problem.id === questionId);
+        if (found >= 0) return found;
+      }
+      const requested = Number(params.get("problem")) - 1;
+      return Number.isInteger(requested) && requested >= 0 && requested < problems.length ? requested : 0;
+    }
+    window.addEventListener("popstate", () => {
+      searchInput.value = "";
+      patternFilter.value = "all";
+      filterProblems();
+      selectProblem(indexFromUrl(), false);
+    });
+    window.addEventListener("pagehide", () => runner.cancel());
+    window.addEventListener("resize", updateLineNumbers);
+    document.addEventListener("kr7:pin-content", event => {
+      const { button, data } = event.detail;
+      if (button.dataset.pinKind !== "practice" || !button.isConnected) return;
+      const question = data.questions?.find(question => question.id === problems[activeIndex]?.id);
+      if (!question) return;
+      pinItem = { index: activeIndex, problem: problems[activeIndex] };
+      problems[activeIndex] = interviewProblem(question);
+      renderProblem(activeIndex);
+      buildProblemList();
+      filterProblems();
+      list.children[activeIndex]?.setAttribute("aria-current", "true");
+    });
+
+    function interviewProblem(question) {
+      return {
+        id: question.id, qa: true, title: question.question, pattern: question.topic,
+        answer: question.answer, reference: question.example || "No code example is provided for this question.",
+      };
+    }
+    async function initialize() {
+      if (topic) {
+        document.getElementById("practice-heading").textContent = `${topic} interview code practice`;
+        document.getElementById("practice-intro").textContent = "Attempt the question on the left. Write a standalone program on the right. Open Solution to compare the interview answer and reference example.";
+        document.getElementById("workspace-access").textContent = "Question access follows your Interview Q&A membership. Remote code execution requires Pro. Drafts stay in this tab.";
+        const qaLink = document.getElementById("interview-topic-link");
+        qaLink.href = `/Subject-QA.html?${new URLSearchParams({ topic })}`;
+        qaLink.textContent = "Back to this Q&A topic";
+        document.getElementById("practice-concepts-link").href = "/Concepts.html";
+        document.title = `TechHub365 | ${topic} code practice`;
+        workspace.textContent = "Loading this interview topic...";
+        previousButton.disabled = nextButton.disabled = solutionToggle.disabled = descriptionToggle.disabled = true;
+        try {
+          let token;
+          try { token = JSON.parse(localStorage.getItem("visual-memory-lab.auth-session") || "null")?.access_token; } catch {}
+          const response = await fetch(`/api/questions?${new URLSearchParams({ topic })}`, {
+            headers: typeof token === "string" ? { Authorization: `Bearer ${token}` } : {},
+            credentials: "same-origin", cache: "no-store",
+          });
+          const data = await response.json();
+          if (!response.ok) throw new Error(data.error || "Could not load interview questions.");
+          const available = (data.questions || []).filter(question => question.topic === topic).map(interviewProblem);
+          const locked = (data.locked || []).filter(question => question.topic === topic)
+            .map((question, index) => ({ id: question.id, qa: true, title: `Pro question ${available.length + index + 1}`, pattern: topic, locked: true }));
+          problems.splice(0, problems.length, ...available, ...locked);
+          if (!problems.length) throw new Error("No questions are available for this topic.");
+          if (data.access?.verificationUnavailable) {
+            document.getElementById("workspace-access").textContent += " Account verification is temporarily unavailable; paid questions remain locked.";
+          }
+          if (/javascript|typescript|angular|react/i.test(topic)) selectedLanguage = "javascript";
+          else if (/python/i.test(topic)) selectedLanguage = "python";
+          else if (/^java$/i.test(topic)) selectedLanguage = "java";
+        } catch (error) {
+          problems.splice(0);
+          workspace.textContent = `Interview practice could not be loaded: ${error.message}`;
+          return;
+        }
+      }
+      buildProblemList();
+      loadProgress();
+      updateProgress();
+      selectProblem(indexFromUrl(), false);
+      filterProblems();
+    }
+    initialize();
   </script>
-  <script src="app-protection.js" defer></script>
 </body>
 </html>

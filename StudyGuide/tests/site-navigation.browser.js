@@ -4,6 +4,7 @@ const assert = require("node:assert/strict");
 const test = require("node:test");
 const { chromium } = require("playwright");
 const { createServer } = require("../server");
+const { openNavigation } = require("./helpers/navigation");
 
 async function openSite(t, options = {}) {
   const server = createServer();
@@ -52,10 +53,11 @@ test("all website sections share the same header and mark their own destination"
   await page.locator("#start").waitFor();
   assert.equal(await page.locator("#interview-subjects, #course-topics, #concept-results").count(), 0);
   await nav.getByRole("link", { name: "Interview Q&A", exact: true }).click();
-  await page.locator("#interview-subjects .interview-note").first().waitFor();
+  await page.locator("#interview-subjects .interview-topic-link").first().waitFor();
   assert.equal(new URL(page.url()).pathname, "/Subject-QA.html");
   assert.equal(await page.locator("#start, #dsa-compiler, #concept-results").count(), 0);
-  await page.getByRole("navigation", { name: "Learning sections" }).getByRole("link", { name: /^AI Interviews/ }).click();
+  assert.equal(await page.locator("[data-learning-sections]").count(), 0);
+  await nav.getByRole("link", { name: "AI Interviews", exact: true }).click();
   assert.equal(new URL(page.url()).pathname, "/AI-Interview.html");
   assert.deepEqual(errors, []);
 });
@@ -70,10 +72,10 @@ test("mobile navigation supports keyboard dismissal, history, resizing, and sepa
   assert.equal(await toggle.getAttribute("aria-expanded"), "true");
   await toggle.press("Tab");
   assert.equal(await nav.getByRole("link", { name: "Home", exact: true }).evaluate(node => node === document.activeElement), true);
-  const summary = nav.locator(".site-more > summary");
+  const summary = nav.locator(".site-nav-group > summary").filter({ hasText: "Practice" });
   await summary.click();
   await summary.press("Escape");
-  assert.equal(await nav.locator(".site-more").getAttribute("open"), null);
+  assert.equal(await summary.evaluate(node => node.parentElement.open), false);
   assert.equal(await summary.evaluate(node => node === document.activeElement), true);
   await summary.press("Escape");
   assert.equal(await nav.isVisible(), false);
@@ -104,7 +106,7 @@ test("mobile navigation supports keyboard dismissal, history, resizing, and sepa
     }
   }
   await toggle.click();
-  await nav.getByRole("link", { name: "Go & Pro plans", exact: true }).click();
+  await nav.getByRole("link", { name: "Pricing", exact: true }).click();
   assert.equal(new URL(page.url()).pathname, "/Membership.html");
   assert.match(await page.locator("main").innerText(), /5,000/);
 });
@@ -116,11 +118,48 @@ test("navigation remains usable without JavaScript, including protected preview 
   assert.equal(await nav.isVisible(), true);
   await nav.getByRole("link", { name: "AI Interviews", exact: true }).click();
   assert.equal(new URL(page.url()).pathname, "/AI-Interview.html");
-  await nav.locator("summary").click();
+  await nav.locator("summary").filter({ hasText: "Practice" }).click();
   await nav.getByRole("link", { name: "DSA + Compiler", exact: true }).click();
   assert.equal(new URL(page.url()).pathname, "/DSA.html");
   assert.equal(await page.locator(".guide-pro-placeholder").count() > 0, true);
-  await nav.getByRole("link", { name: "Courses NEW", exact: true }).click();
+  await (await openNavigation(page, "Learn")).getByRole("link", { name: "Courses NEW", exact: true }).click();
   assert.equal(new URL(page.url()).pathname, "/Courses.html");
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+});
+
+test("home search opens filtered topics and interview sidebar switches topics without a page reload", async t => {
+  const { page, base } = await openSite(t);
+  await page.goto(base);
+  await page.getByRole("search", { name: "Find a learning topic" }).getByRole("searchbox").fill("Angular");
+  await page.getByRole("button", { name: "Find topics", exact: true }).click();
+  assert.equal(new URL(page.url()).pathname, "/Subjects.html");
+  assert.equal(new URL(page.url()).searchParams.get("q"), "Angular");
+  assert.equal(await page.locator('[name="query"]').inputValue(), "Angular");
+  await page.locator("#catalog-results .offering-card").first().waitFor();
+  await page.goto(`${base}/Subject-QA.html?topic=SQL`);
+  await page.locator("#subject-qa-results .qa-card").first().waitFor();
+  await page.evaluate(() => { window.navigationMarker = "same-document"; });
+  const search = page.getByRole("searchbox", { name: "Find a topic", exact: true });
+  await search.fill("Angular");
+  assert.equal(await page.locator(".interview-topic-link:visible").count(), 1);
+  await page.locator('[data-interview-subject="Angular"]').click();
+  await page.getByRole("heading", { name: "Angular Interview Q&A", exact: true }).waitFor();
+  assert.equal(await page.evaluate(() => window.navigationMarker), "same-document");
+  assert.equal(await page.locator('#interview-directory').getAttribute("open"), "");
+  assert.equal(await page.locator(".interview-topic-link[aria-current=page]").getAttribute("data-interview-subject"), "Angular");
+  assert.equal(await page.locator("[data-learning-topic]").getAttribute("data-learning-course"), "angular-qa");
+  await page.goBack();
+  await page.getByRole("heading", { name: "SQL Interview Q&A", exact: true }).waitFor();
+  assert.equal(await page.locator("[data-learning-topic]").getAttribute("data-learning-course"), "sql-qa");
+  await search.fill("not-a-topic");
+  await page.getByText("No topics match. Try another search.", { exact: true }).waitFor();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto(`${base}/Subject-QA.html?topic=Angular`);
+  await page.getByRole("heading", { name: "Angular Interview Q&A", exact: true }).waitFor();
+  assert.equal(await page.locator("#interview-directory").getAttribute("open"), null);
+  await page.locator("#interview-directory > summary").click();
+  await page.locator('[data-interview-subject="SQL"]').click();
+  await page.getByRole("heading", { name: "SQL Interview Q&A", exact: true }).waitFor();
+  assert.equal(await page.locator("#interview-directory").getAttribute("open"), null);
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
 });

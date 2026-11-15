@@ -46,12 +46,14 @@
   const provider = document.getElementById("membership-provider");
   const plan = document.getElementById("membership-plan");
   const price = document.getElementById("membership-price");
+  const adminContact = document.getElementById("membership-admin-contact");
   const offerNote = document.getElementById("membership-offer-note");
   const account = document.getElementById("membership-account");
   const button = document.getElementById("membership-buy");
   const signIn = document.getElementById("membership-sign-in");
   let choices = [];
   let busy = false;
+  let checkoutFailed = false;
   let configuration;
   let cookieAccount = false;
   let currentPlan = "Free";
@@ -62,7 +64,8 @@
     const choice = choices.find(item => item.provider === provider.value);
     price.textContent = choice
       ? `${new Intl.NumberFormat(undefined, { style: "currency", currency: choice.currency }).format(choice.amount)} | one-time ${plan.value} purchase`
-      : "Checkout is temporarily unavailable. You can still explore free previews.";
+      : "Checkout is temporarily unavailable. Message our admin on WhatsApp below for assistance, or explore free previews.";
+    if (adminContact) adminContact.hidden = Boolean(choice) && !checkoutFailed;
     if (offerNote) {
       const offer = configuration?.planOffers?.[plan.value];
       offerNote.textContent = choice?.currency === "USD"
@@ -125,6 +128,7 @@
       return;
     }
     busy = true;
+    checkoutFailed = false;
     plan.disabled = true;
     provider.disabled = true;
     updateChoice();
@@ -141,6 +145,7 @@
       window.location.assign(checkoutUrl(result.checkoutUrl));
     } catch (error) {
       status.textContent = error.message || "Checkout could not be created. No access has been granted.";
+      checkoutFailed = true;
       busy = false;
       plan.disabled = false;
       updatePlan();

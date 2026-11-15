@@ -32,6 +32,9 @@
       card.append(node("span", `${course.category} | Go: first 2 lessons / Pro: all`, "note-label"),
         node("h3", course.title, "note-title"),
         node("p", course.path?.goal || "Understand the concept, follow the flow, and learn from worked examples.", "note-copy"));
+      card.append(node("p", course.category === "Angular + .NET Fullstack"
+        ? "Topic guidance: Akhil (frontend) and Krishna (backend)"
+        : `Topic guidance: ${window.KR7Catalog.coachForCategory(course.category)}`, "course-prerequisite"));
       if (course.path) card.append(node("p", `Before you start: ${course.path.prerequisite}`, "course-prerequisite"));
       card.append(node("p", "Recommended reading order", "course-path-label"));
       const outline = node("ol", undefined, "course-outline");

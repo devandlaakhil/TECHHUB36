@@ -15,6 +15,7 @@
      }
    ],
    "rewrites": [
+     { "source": "/Visual-Interview-Memory-Lab.html", "destination": "/api/serve-page?page=Visual-Interview-Memory-Lab.html" },
      { "source": "/dotnet-roadmap.js", "destination": "/api/serve-page?asset=dotnet-roadmap.js" },
      { "source": "/interview-studio.js", "destination": "/api/serve-page?asset=interview-studio.js" },
      { "source": "/Amazon-Design.html", "destination": "/api/serve-page?page=Amazon-Design.html" },

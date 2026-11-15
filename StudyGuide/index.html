@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="site.css" />
     <link rel="stylesheet" href="company-strip.css" />
     <link rel="stylesheet" href="community.css" />
+    <link rel="stylesheet" href="training.css" />
   </head>
   <body>
     <header class="topbar">
@@ -29,101 +30,71 @@
       </nav>
     </header>
     <main>
-      <section class="hero" aria-labelledby="hero-heading">
-        <p class="eyebrow">Practical learning. Focused interview preparation.</p>
-        <h1 id="hero-heading">Learn the skills.<br /><span>Practise with confidence.</span></h1>
-        <p class="hero-copy">Build stronger Angular, .NET, SQL, cloud, and system-design skills with guided concepts, worked examples, and interview practice. Start free, then choose the membership that fits your preparation.</p>
-        <div class="actions">
-          <a class="button" href="Membership.html">Grab 50% off Go or Pro</a>
-          <a class="button secondary" href="Subject-QA.html">Try free questions</a>
-          <a class="button secondary" href="Fullstack-Angular-Dotnet.html">Angular + .NET: 0-5 years</a>
+      <section class="hero home-hero" aria-labelledby="hero-heading">
+        <div class="home-hero-copy">
+          <p class="eyebrow">One place to learn and prepare</p>
+          <h1 id="hero-heading">Pick a topic.<br /><span>Get interview ready.</span></h1>
+          <p class="hero-copy">Find interview questions, learn a concept, or practise a skill. Start with your subject and go straight to what you need.</p>
+          <form class="home-topic-search" role="search" aria-label="Find a learning topic" action="Subjects.html" method="get">
+            <label for="home-topic-search">What do you want to prepare?</label>
+            <div><input id="home-topic-search" name="q" type="search" maxlength="160" placeholder="Search Angular, C#, SQL, system design..." /><button class="button" type="submit">Find topics</button></div>
+          </form>
+          <div class="actions">
+            <a class="button" href="Subject-QA.html">Browse interview questions</a>
+            <a class="button secondary" href="Courses.html">Start learning</a>
+          </div>
+          <p class="hero-note">Try 10 free interview questions per subject. Choose Go or Pro when you need more access.</p>
         </div>
-        <p class="hero-note">Go: INR 750 <s>1,500</s>. Pro: INR 2,500 <s>5,000</s>. Save 50% on one-time INR purchases. No automatic renewal. PayPal USD prices are separate.</p>
+        <aside class="home-hero-guide" aria-labelledby="home-hero-guide-heading">
+          <p class="home-hero-guide-label">A simple way to start</p>
+          <h2 id="home-hero-guide-heading">Your next step, made clear.</h2>
+          <div class="home-hero-steps">
+            <a class="home-hero-step" href="#subjects"><span>01</span><strong>Choose a topic</strong><small>Start with the subject you need.</small></a>
+            <a class="home-hero-step" href="Courses.html"><span>02</span><strong>Learn the concepts</strong><small>Build understanding at your pace.</small></a>
+            <a class="home-hero-step" href="AI-Interview.html"><span>03</span><strong>Practise your answers</strong><small>Prepare with focused practice.</small></a>
+          </div>
+        </aside>
       </section>
-      <div class="value-strip" aria-label="Learning highlights"><span>Clear concepts</span><span>Practical learning paths</span><span>AI interview practice</span><span>Beginner to expert</span></div>
-      <nav class="learning-sections" data-learning-sections aria-label="Learning sections"></nav>
-
       <section id="learning-paths" class="content-section" aria-labelledby="paths-heading">
-        <p class="section-kicker">Choose what you need</p>
-        <h2 class="section-heading" id="paths-heading">One platform. Your next step.</h2>
-        <p class="section-copy">Choose a structured path, deepen a subject, or practise for an interview. Each section gives you a focused place to learn.</p>
-        <div class="offering-grid">
-          <article class="offering-card">
-            <span class="badge">STUDENT</span>
-            <h3>Student Plan</h3>
-            <p>For students &amp; beginners: choose subjects, study days, duration in months, and a personal budget. Get a clear self-study schedule.</p>
-            <a href="Student-Plan.html">Build your student schedule &rarr;</a>
-          </article>
-          <article class="offering-card">
-            <span class="badge gold">EXPERT</span>
-            <h3>Expert Plan</h3>
-            <p>For working engineers &amp; senior professionals: deepen .NET, cloud, system design, debugging, and technical ownership.</p>
-            <a href="Expert-Plan.html">Explore the expert path &rarr;</a>
-          </article>
-          <article class="offering-card">
-            <span class="badge gold">GO &amp; PRO ACCESS</span>
-            <h3>All topics. Complete answers.</h3>
-            <p>Go: unlimited Interview Q&amp;A, one AI interview daily, and two concept lessons per subject. Pro: all available content and unlimited AI sessions.</p>
-            <a href="Membership.html">50% off INR: Go 750 | Pro 2,500 &rarr;</a>
-          </article>
-          <article class="offering-card">
-            <span class="badge">CONCEPTS</span>
-            <h3>Understand before you memorize</h3>
-            <p>Learn why a concept matters through explanations, visual flows, examples, and real engineering trade-offs.</p>
-            <a href="Concepts.html">Explore learning concepts &rarr;</a>
-          </article>
-          <article class="offering-card">
-            <span class="badge">PERSONAL GUIDANCE</span>
-            <h3>1:1 coaching</h3>
-            <p>Focus on technical gaps, project discussions, and interview explanations. Review coaching availability and session details before choosing personal guidance.</p>
-            <a href="Coaching.html">View coaching details &rarr;</a>
-          </article>
-          <article class="offering-card">
-            <span class="badge">AI PRACTICE</span>
-            <h3>AI interviews</h3>
-            <p>Practice answering role-relevant questions and receive AI coaching on technical content and clarity. Type or use supported voice input.</p>
-            <a href="AI-Interview.html">Open AI interview practice &rarr;</a>
-          </article>
-          <article class="offering-card">
-            <span class="badge">GET READY</span>
-            <h3>Interview preparation</h3>
-            <p>Prepare with a structured routine for coding, system design, company-focused practice, and truthful project stories.</p>
-            <a href="Interview-Preparation.html">Explore preparation paths &rarr;</a>
-          </article>
-          <article class="offering-card">
-            <span class="badge">QUESTION BANK</span>
-            <h3>Interview Q&amp;A</h3>
-            <p>Open a dedicated subject page for EF Core, LINQ, SQL, and more. Read that subject's first 10 questions and answers free; Go and Pro include the complete bank.</p>
-            <a href="Subject-QA.html">Browse subject interview Q&amp;A &rarr;</a>
-          </article>
-          <article class="offering-card">
-            <span class="badge">COMPANY PREPARATION</span>
-            <h3>Company Interviews</h3>
-            <p>Prepare separately for Microsoft, Amazon, Google, Infosys, TCS, and Accenture using company and technology filters.</p>
-            <a href="Company-Interviews.html">Browse company interview questions &rarr;</a>
-          </article>
-          <article class="offering-card">
-            <span class="badge">LEARNING LIBRARY</span>
-            <h3>Learn by subject</h3>
-            <p>Find C#/.NET, frontend, SQL, Azure, DevOps, AI, and more. Each subject opens its own guide or practice page.</p>
-            <a href="Subjects.html">Browse all subjects &rarr;</a>
-          </article>
+        <h2 class="section-heading" id="paths-heading">What would you like to do?</h2>
+        <div class="offering-grid home-goals">
+          <article class="offering-card home-goal-card"><span class="badge">PREPARE</span><h3>Interview questions</h3><p>Choose your subject. Read focused questions, answers, and practical examples.</p><a href="Subject-QA.html">Find my interview topic &rarr;</a></article>
+          <article class="offering-card home-goal-card"><span class="badge">LEARN</span><h3>Understand a topic</h3><p>Follow a course or open a concept lesson when you need the explanation first.</p><a href="Courses.html">Browse courses &amp; concepts &rarr;</a></article>
+          <article class="offering-card home-goal-card"><span class="badge">PRACTISE</span><h3>Put your skills to work</h3><p>Solve coding problems or rehearse your answers in an AI mock interview.</p><a href="DSA.html">Open coding practice &rarr;</a><a href="AI-Interview.html">Try an AI interview &rarr;</a></article>
         </div>
+        <div class="home-path-callout"><div><strong>Angular + .NET fullstack</strong><p>A guided learning path for developers with 0-5 years of experience.</p></div><a class="button secondary" href="Fullstack-Angular-Dotnet.html">Explore the path &rarr;</a></div>
+        <p class="hero-note">Need a plan? <a href="Student-Plan.html">Build a student study schedule</a> or explore the <a href="Expert-Plan.html">experienced developer path</a>. For personal guidance, see <a href="Coaching.html">1:1 coaching</a>.</p>
       </section>
 
       <section id="subjects" class="content-section" aria-labelledby="subjects-heading">
-        <p class="section-kicker">Find your focus</p>
-        <h2 class="section-heading" id="subjects-heading">Pick a subject. Start learning.</h2>
-        <p class="section-copy">Explore a subject's free preview, then unlock the depth you need with Go or Pro.</p>
-        <p class="section-copy"><a href="Subjects.html">Find your next subject</a>, save it, and return through <a href="My-Learning.html">My Learning</a>. Saved subjects and review progress are kept on your current browser.</p>
-        <div class="subject-links">
-          <a href="Fullstack-Angular-Dotnet.html">Angular + .NET Fullstack</a><a href="C%23Dotnet.html">C# &amp; .NET</a><a href="AZURECICD.html">Azure &amp; CI/CD</a>
-          <a href="Subject-QA.html?topic=Angular">Angular</a><a href="React-Machine-Coding.html">React</a>
-          <a href="Subject-QA.html?topic=SQL">SQL</a><a href="System-Design.html">System design</a>
-          <a href="DSA.html">DSA</a><a href="How%20AI%20work.html">AI &amp; agents</a><a href="Subjects.html">All subjects &rarr;</a>
+        <p class="section-kicker">Every interview topic, one clear starting point</p>
+        <h2 class="section-heading" id="subjects-heading">Master every topic.</h2>
+        <p class="section-copy">Browse the same topics as Interview Q&amp;A. Learn the concepts, prepare your answers or explore 1:1 guidance with Akhil for frontend and Krishna for the remaining subjects.</p>
+        <div data-training-directory="topics">
+        <div class="home-topic-grid">
+          <article class="home-topic-card"><h3>C# &amp; .NET</h3><p>Language foundations, runtime, and backend development.</p><a href="Concepts.html?category=C%23">Learn concepts &rarr;</a><a href="Subject-QA.html?topic=C%23%20%2F%20.NET">Interview Q&amp;A &rarr;</a></article>
+          <article class="home-topic-card"><h3>Angular</h3><p>Components, forms, routing, and frontend engineering.</p><a href="Concepts.html?category=Angular">Learn concepts &rarr;</a><a href="Subject-QA.html?topic=Angular">Interview Q&amp;A &rarr;</a></article>
+          <article class="home-topic-card"><h3>SQL</h3><p>Queries, indexes, transactions, and database decisions.</p><a href="Concepts.html?category=SQL">Learn concepts &rarr;</a><a href="Subject-QA.html?topic=SQL">Interview Q&amp;A &rarr;</a></article>
+          <article class="home-topic-card"><h3>System design</h3><p>Architecture, scalability, reliability, and trade-offs.</p><a href="Concepts.html?category=System%20Design">Learn concepts &rarr;</a><a href="Subject-QA.html?topic=System%20Design">Interview Q&amp;A &rarr;</a></article>
+          <article class="home-topic-card"><h3>Azure</h3><p>Cloud services, identity, messaging, and deployment.</p><a href="Concepts.html?category=Azure">Learn concepts &rarr;</a><a href="Subject-QA.html?topic=Azure">Interview Q&amp;A &rarr;</a></article>
+          <article class="home-topic-card"><h3>Microservices &amp; patterns</h3><p>Service boundaries, distributed systems, and design patterns.</p><a href="Concepts.html?category=Microservices">Learn concepts &rarr;</a><a href="Subject-QA.html?topic=Microservices">Interview Q&amp;A &rarr;</a></article>
         </div>
+        </div>
+        <div class="home-path-callout"><div><strong>Visual Interview Memory Lab</strong><p>30 free C# and .NET questions with memory cues, visual flows and interview-ready answers.</p></div><a class="button secondary" href="Visual-Interview-Memory-Lab.html">Start visual practice &rarr;</a></div>
+        <div class="actions"><a class="button secondary" href="Subjects.html">Browse all topics</a><a href="My-Learning.html">Return to My Learning &rarr;</a></div>
       </section>
 
+      <section class="content-section" aria-labelledby="learner-focus-heading">
+        <p class="section-kicker">Built for your next step</p>
+        <h2 class="section-heading" id="learner-focus-heading">Support for students &amp; beginners and working engineers &amp; senior professionals.</h2>
+        <p class="section-copy">Choose a learning path that matches your stage, then move from concept review to interview practice with curated guidance. Review coaching availability before buying additional support.</p>
+        <div class="subject-links">
+          <a href="C%23Dotnet.html">C# &amp; .NET reference bank</a>
+          <a href="System-Design.html">System design reference bank</a>
+          <a href="AZURECICD.html">Azure &amp; delivery reference bank</a>
+          <a href="Account.html">Create account / log in</a>
+        </div>
+      </section>
       <section id="pro-access" class="content-section" aria-labelledby="pro-heading">
         <div class="pro-panel">
           <span class="badge gold">YOUR MEMBERSHIP</span>
@@ -144,7 +115,7 @@
         <h2 class="section-heading" id="faq-heading">Before you start</h2>
         <div class="faq-list">
           <details><summary>Which membership should I choose?</summary><p>Go suits question-led interview preparation. Pro adds the complete available concept and guide library. Student and Expert paths help organise your study; they are not separate paid memberships.</p></details>
-          <details><summary>Is everything free?</summary><p>No. The first 10 questions and answers per topic are free. Go includes full Interview Q&amp;A, one AI interview per day, and two concept lessons per subject. Pro includes all available content and unlimited AI sessions. Paid access is verified on the server.</p></details>
+          <details><summary>Is everything free?</summary><p>No. The first 10 questions and answers per standard topic are free; the Visual Interview Memory Lab offers 30 free questions. Go includes full Interview Q&amp;A, one AI interview per day, and two concept lessons per subject. Pro includes all available content and unlimited AI sessions. Paid access is verified on the server.</p></details>
           <details><summary>How do I buy and start learning?</summary><p>Create an account, choose Go or Pro, and complete an available payment method. Once your payment is confirmed, use the same account to access your membership. You can check its status in My purchases.</p></details>
         </div>
       </section>
@@ -174,5 +145,6 @@
     <script src="company-strip.js" defer></script>
     <script src="community.js" defer></script>
     <script src="learning-sections.js" defer></script>
+    <script src="training-directory.js" defer></script>
   </body>
 </html>

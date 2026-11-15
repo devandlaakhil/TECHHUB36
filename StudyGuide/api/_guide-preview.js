@@ -4,7 +4,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const acorn = require("acorn");
 const { parse, serializeOuter } = require("parse5");
-const { FREE_PREVIEW_LIMIT } = require("./_pro-policy");
+const { FREE_PREVIEW_LIMIT, VISUAL_MEMORY_PAGE, guidePreviewLimit } = require("./_pro-policy");
 const interviewPractice = require("./_interview-practice");
 
 const FREE_ITEMS_PER_TOPIC = FREE_PREVIEW_LIMIT;
@@ -66,6 +66,26 @@ function dataVariable(source, name) {
   }
   visit(ast);
   return value;
+}
+
+function dsaPreviewHtml(html) {
+  const document = parse(html, { sourceCodeLocationInfo: true });
+  const scripts = descendants(document, node => node.tagName === "script" && !node.attrs?.some(attr => attr.name === "src"));
+  for (const script of scripts) {
+    const source = text(script);
+    const ast = acorn.parse(source, { ecmaVersion: "latest" });
+    const declaration = ast.body.flatMap(node => node.declarations || [])
+      .find(node => node.id.name === "problems");
+    if (!declaration) continue;
+    const problems = readLiteral(declaration.init);
+    const preview = problems.map((problem, index) => index < FREE_ITEMS_PER_TOPIC ? problem
+      : { title: `Pro problem ${index + 1}`, pattern: "Pro practice", locked: true });
+    const serialized = JSON.stringify(preview).replace(/</g, "\\u003c").replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
+    const start = script.sourceCodeLocation.startTag.endOffset;
+    return html.slice(0, start + declaration.init.start) + serialized +
+      html.slice(start + declaration.init.end);
+  }
+  throw new Error("DSA preview data is missing; private guide cannot be served.");
 }
 
 function fieldsItem(title, fields) {
@@ -157,6 +177,7 @@ function staticTopics(document, title) {
 }
 
 function guideTopics(page, html, directory, title) {
+  if (page === VISUAL_MEMORY_PAGE) html = fs.readFileSync(path.join(directory, "C#Dotnet.html"), "utf8");
   const document = parse(html);
   const dynamic = dynamicTopics(page, document, directory);
   if (dynamic) return [{ title, items: dynamic.flatMap(topic => topic.items) }];
@@ -173,12 +194,13 @@ function guideTopics(page, html, directory, title) {
   return [{ title, items: topics.flatMap(topic => topic.items) }];
 }
 
-function renderTopics(topics, page = "") {
+function renderTopics(topics, page = "", { unlocked = false } = {}) {
+  const limit = guidePreviewLimit(page);
   return topics.map((topic, topicIndex) => `<section class="preview-topic" aria-labelledby="topic-${topicIndex}">
     <h2 id="topic-${topicIndex}">${escapeHtml(topic.title)}</h2>
-    <p>${Math.min(FREE_ITEMS_PER_TOPIC, topic.items.length)} free of ${topic.items.length} questions / lessons</p>
+    <p>${Math.min(limit, topic.items.length)} free of ${topic.items.length} questions / lessons${unlocked ? " &middot; Pro access active" : ""}</p>
     <div class="preview-grid">${topic.items.map((item, index) => {
-      if (index < FREE_ITEMS_PER_TOPIC) return `<article class="preview-item" data-free-item>${item.html}</article>`;
+      if (index < limit || unlocked) return `<article class="preview-item" ${index < limit ? "data-free-item" : "data-member-item"}>${item.html}</article>`;
       return `<article class="preview-item guide-pro-placeholder" data-pro-item aria-label="Pro item ${index + 1}">
         <div class="pro-blur" aria-hidden="true"><h3>Premium question ${index + 1}</h3><p>Detailed answer, worked example, and practice explanation.</p></div>
         <div class="pro-overlay"><strong>Pro only</strong><button class="button" type="button" data-pro-unlock data-pro-resource="${escapeHtml(`guide:${page}:${index}`)}" data-pin-kind="guide" data-pin-url="${escapeHtml(`/api/serve-page?${new URLSearchParams({ page, item: String(index) })}`)}">Enter PIN for this item</button></div>
@@ -234,4 +256,5 @@ function renderGuidePractice(page) {
 module.exports = {
   escapeHtml, FREE_ITEMS_PER_TOPIC, guideTopics, renderTopics,
   learningGuideTopics, guidePracticeItems, renderGuidePractice,
+  dsaPreviewHtml,
 };

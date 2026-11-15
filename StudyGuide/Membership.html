@@ -22,6 +22,7 @@
         <tr><th scope="row">AI interview sessions</th><td>Not included</td><td>1 per day</td><td>No daily session cap</td></tr>
         <tr><th scope="row">Concepts and courses</th><td>Public outlines</td><td>First 2 lessons per subject</td><td>All available lessons</td></tr>
         <tr><th scope="row">Guides and roadmaps</th><td>10 preview items</td><td>10 preview items</td><td>Complete available content</td></tr>
+        <tr><th scope="row">Visual Interview Memory Lab</th><td>First 30 questions</td><td>First 30 questions</td><td>Complete lab</td></tr>
         <tr><th scope="row">Student study-plan builder</th><td>Included</td><td>Included</td><td>Included</td></tr>
         <tr><th scope="row">Saved subjects and review progress</th><td>Current browser</td><td>Current browser</td><td>Current browser</td></tr>
         <tr><th scope="row">Remote code runner</th><td>Not included</td><td>Not included</td><td>When the service is available</td></tr>
@@ -42,6 +43,12 @@
         <form id="membership-form">
           <div class="student-plan-fields"><label>Membership<select id="membership-plan" name="plan"><option value="Pro">Pro - INR 2,500 one-time (50% off)</option><option value="Go">Go - INR 750 one-time (50% off)</option></select></label><label>Payment method<select id="membership-provider" name="provider" disabled><option value="">Loading...</option></select></label></div>
           <p id="membership-price" class="membership-price">Checking your checkout amount...</p>
+          <aside id="membership-admin-contact" class="pro-panel" aria-labelledby="membership-support-heading" hidden>
+            <h3 id="membership-support-heading">Need help with your membership?</h3>
+            <p>Message the KR7Tech admin on WhatsApp at <strong>+91 89858 37483</strong> for membership or checkout assistance. Direct calls may not be available, so please send a brief message describing your request.</p>
+            <div class="actions"><a id="membership-admin-whatsapp" class="button" href="https://wa.me/918985837483?text=Hello%20KR7Tech%20admin%2C%20I%20need%20help%20with%20my%20membership%20or%20checkout." target="_blank" rel="noopener noreferrer">Message admin on WhatsApp</a><a class="button secondary" href="Subject-QA.html">Explore free previews</a></div>
+            <p class="muted">Never share passwords, OTPs, card details, or account access codes. Contacting support does not start a payment or activate a membership.</p>
+          </aside>
           <p id="membership-offer-note" class="muted">The 50% offer applies to INR checkouts only; PayPal USD prices are separate.</p>
           <p id="membership-account" class="muted"></p>
           <p><label><input id="membership-acknowledge" type="checkbox" required aria-describedby="pro-benefit-availability" /> I have reviewed my plan's price, content and service availability, the <a href="Terms.html">Terms of Use</a>, <a href="Refund.html">payment and refund information</a>, and <a href="Privacy.html">Privacy notice</a>.</label></p>
@@ -56,7 +63,7 @@
       <details><summary>Can I use my account on another device?</summary><p>Yes. Log in with the same username and password to use your purchased access. Saved-subject and reviewed-item checkmarks remain in the browser where you created them.</p></details>
       <details><summary>What happens after I pay?</summary><p>My purchases checks the payment confirmation and your current plan. If confirmation is delayed, refresh there instead of paying again. Contact support with your purchase reference if a completed payment has not activated access.</p></details>
       <details><summary>Is checkout recurring?</summary><p>No. Go and Pro are one-time purchases. This checkout does not start an automatic renewal.</p></details>
-      <details><summary>What if checkout is unavailable?</summary><p>No payment is started. Explore free previews and return later. Never send money to an unofficial account claiming to unlock KR7Tech.</p></details>
+      <details><summary>What if checkout is unavailable?</summary><p>No payment is started. <a href="https://wa.me/918985837483?text=Hello%20KR7Tech%20admin%2C%20I%20need%20help%20with%20my%20membership%20or%20checkout." target="_blank" rel="noopener noreferrer">Message the KR7Tech admin on WhatsApp</a> for assistance; direct calls may not be available. You can still explore free previews. Never send money to an unofficial account claiming to unlock KR7Tech.</p></details>
       <details><summary>How do I get help or request a refund review?</summary><p>Read <a href="Refund.html">payment help and refunds</a>, then <a href="Contact.html">contact support</a> with your purchase reference. Never send your password or card security code.</p></details>
       <details><summary>Have an individual lesson access code?</summary><p>Open the protected lesson and enter its PIN there. Each code confirmation opens only that item; it is not a Go or Pro membership.</p></details>
     </div></section>

@@ -55,7 +55,7 @@ async function open(page, query = "", { access = {} } = {}) {
       getElementById: element, createElement: tagName => node({ tagName }),
       addEventListener: (name, callback) => events.set(`document:${name}`, callback),
     },
-    window: { KR7ConceptPaths: paths, addEventListener: (name, callback) => events.set(name, callback) },
+    window: { KR7ConceptPaths: paths, KR7Catalog: require("../learning-catalog"), addEventListener: (name, callback) => events.set(name, callback) },
     location, URL, URLSearchParams, AbortController,
     history: { pushState(_, __, url) { location.href = url.href; } },
     localStorage: { getItem() { return null; } },

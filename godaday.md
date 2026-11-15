@@ -7,9 +7,9 @@ Project: `C:\Users\v-kbandoju\OneDrive - Microsoft\Desktop\KR7\KR7Tech`
 
 Application folder: `StudyGuide`
 
-Example domain: **techhub365.in**, shown in your GoDaddy cart. Replace it
-everywhere below if you buy a different domain. A cart is not proof of completed
-registration: check that the domain appears in your GoDaddy account.
+Example domain: **kr7tech.example**. This is a placeholder, not a registered
+production domain. Replace it everywhere below with a domain you own or your
+actual deployment hostname. The application name is **KR7Tech**.
 
 This is a manual deployment guide. Writing this file did not purchase a domain,
 upload your project, create cloud accounts, configure DNS, or deploy anything.
@@ -244,7 +244,7 @@ Use this setup:
 Student's browser
         |
         v
-techhub365.in
+kr7tech.example
 GoDaddy registration and DNS
         |
         v
@@ -585,7 +585,7 @@ Replace every placeholder and redeploy after changes.
 | --- | --- |
 | `NODE_ENV` | `production` |
 | `NODE_VERSION` | `24` |
-| `PUBLIC_APP_URL` | Exact active HTTPS origin; ultimately `https://techhub365.in` |
+| `PUBLIC_APP_URL` | Exact active HTTPS origin; replace the placeholder `https://kr7tech.example` |
 | `AUTH_PROVIDER` | `mongodb` |
 | `MONGODB_URI` | Fresh private Atlas application URI |
 | `MONGODB_DATABASE` | `kr7tech` |
@@ -656,14 +656,14 @@ Only continue after the temporary Render site works.
 
 ### 10.1 Add the domain on Render
 
-In the service's **Settings > Custom Domains**, add `techhub365.in`.
+In the service's **Settings > Custom Domains**, add your actual domain (shown here as `kr7tech.example`).
 Render also handles the corresponding `www` domain and redirects it to the
 root when the root was added first. Use the root as this guide's canonical
 address.[^render-domains]
 
 ### 10.2 Add the web DNS records
 
-Open GoDaddy **Domain Portfolio > techhub365.in > DNS**.
+Open GoDaddy **Domain Portfolio > your domain (kr7tech.example in this example) > DNS**.
 For GoDaddy-managed DNS, add or edit these records:[^godaddy-dns][^godaddy-a][^godaddy-cname][^render-dns]
 
 | Type | Name / Host | Value | TTL |
@@ -701,16 +701,16 @@ but global propagation can take up to 48 hours.[^godaddy-a]
 Check records from your own normal PowerShell terminal:
 
 ```powershell
-Resolve-DnsName techhub365.in -Type A
-Resolve-DnsName www.techhub365.in -Type CNAME
+Resolve-DnsName kr7tech.example -Type A
+Resolve-DnsName www.kr7tech.example -Type CNAME
 ```
 
 Then open:
 
 ```text
-https://techhub365.in/
-https://www.techhub365.in/
-https://techhub365.in/api/health
+https://kr7tech.example/
+https://www.kr7tech.example/
+https://kr7tech.example/api/health
 ```
 
 If only the temporary Render URL works, resolve DNS/domain/TLS configuration
@@ -720,7 +720,7 @@ before changing application code.
 
 After DNS and HTTPS work:
 
-1. Set `PUBLIC_APP_URL=https://techhub365.in` in Render.
+1. Set `PUBLIC_APP_URL` to your real HTTPS origin in Render (replace `https://kr7tech.example`).
 2. Save and redeploy.
 3. Open the root domain, not the old Render URL, for login and forms.
 4. Log in using your saved username and password on the final domain.
@@ -728,7 +728,7 @@ After DNS and HTTPS work:
 6. Use the final HTTPS domain in every enabled payment webhook and callback.
 
 This origin must match exactly. If you choose `www` as canonical instead,
-consistently use `https://www.techhub365.in` in the host, provider settings
+consistently use your real `www` origin (replace `https://www.kr7tech.example`) in the host, provider settings
 and your testing. Do not alternate between root and `www` when diagnosing
 cookie-backed writes.
 
@@ -757,7 +757,7 @@ activation requirements before taking real payments.
 1. Create/activate your provider account and select Test Mode initially.
 2. Obtain the test key ID and secret.
 3. Configure a webhook for:
-   `https://techhub365.in/api/webhooks/razorpay`.
+   `https://kr7tech.example/api/webhooks/razorpay` (replace the placeholder domain).
 4. Subscribe to **`payment_link.paid`**. This implementation uses Payment Links,
    not a generic client-side success callback.[^razorpay-links]
 5. Choose a private webhook secret and set the three Razorpay variables from
@@ -1006,9 +1006,9 @@ Project: `C:\Users\v-kbandoju\OneDrive - Microsoft\Desktop\KR7\KR7Tech`
 
 Application folder: `StudyGuide`
 
-Example domain: **techhub365.in**, shown in your GoDaddy cart. Replace it
-everywhere below if you buy a different domain. A cart is not proof of completed
-registration: check that the domain appears in your GoDaddy account.
+Example domain: **kr7tech.example**. This is a placeholder, not a registered
+production domain. Replace it everywhere below with a domain you own or your
+actual deployment hostname. The application name is **KR7Tech**.
 
 This is a manual deployment guide. Writing this file did not purchase a domain,
 upload your project, create cloud accounts, configure DNS, or deploy anything.
@@ -1243,7 +1243,7 @@ Use this setup:
 Student's browser
         |
         v
-techhub365.in
+kr7tech.example
 GoDaddy registration and DNS
         |
         v
@@ -1584,7 +1584,7 @@ Replace every placeholder and redeploy after changes.
 | --- | --- |
 | `NODE_ENV` | `production` |
 | `NODE_VERSION` | `24` |
-| `PUBLIC_APP_URL` | Exact active HTTPS origin; ultimately `https://techhub365.in` |
+| `PUBLIC_APP_URL` | Exact active HTTPS origin; replace the placeholder `https://kr7tech.example` |
 | `AUTH_PROVIDER` | `mongodb` |
 | `MONGODB_URI` | Fresh private Atlas application URI |
 | `MONGODB_DATABASE` | `kr7tech` |
@@ -1655,14 +1655,14 @@ Only continue after the temporary Render site works.
 
 ### 10.1 Add the domain on Render
 
-In the service's **Settings > Custom Domains**, add `techhub365.in`.
+In the service's **Settings > Custom Domains**, add your actual domain (shown here as `kr7tech.example`).
 Render also handles the corresponding `www` domain and redirects it to the
 root when the root was added first. Use the root as this guide's canonical
 address.[^render-domains]
 
 ### 10.2 Add the web DNS records
 
-Open GoDaddy **Domain Portfolio > techhub365.in > DNS**.
+Open GoDaddy **Domain Portfolio > your domain (kr7tech.example in this example) > DNS**.
 For GoDaddy-managed DNS, add or edit these records:[^godaddy-dns][^godaddy-a][^godaddy-cname][^render-dns]
 
 | Type | Name / Host | Value | TTL |
@@ -1700,16 +1700,16 @@ but global propagation can take up to 48 hours.[^godaddy-a]
 Check records from your own normal PowerShell terminal:
 
 ```powershell
-Resolve-DnsName techhub365.in -Type A
-Resolve-DnsName www.techhub365.in -Type CNAME
+Resolve-DnsName kr7tech.example -Type A
+Resolve-DnsName www.kr7tech.example -Type CNAME
 ```
 
 Then open:
 
 ```text
-https://techhub365.in/
-https://www.techhub365.in/
-https://techhub365.in/api/health
+https://kr7tech.example/
+https://www.kr7tech.example/
+https://kr7tech.example/api/health
 ```
 
 If only the temporary Render URL works, resolve DNS/domain/TLS configuration
@@ -1719,7 +1719,7 @@ before changing application code.
 
 After DNS and HTTPS work:
 
-1. Set `PUBLIC_APP_URL=https://techhub365.in` in Render.
+1. Set `PUBLIC_APP_URL` to your real HTTPS origin in Render (replace `https://kr7tech.example`).
 2. Save and redeploy.
 3. Open the root domain, not the old Render URL, for login and forms.
 4. Log in using your saved username and password on the final domain.
@@ -1727,7 +1727,7 @@ After DNS and HTTPS work:
 6. Use the final HTTPS domain in every enabled payment webhook and callback.
 
 This origin must match exactly. If you choose `www` as canonical instead,
-consistently use `https://www.techhub365.in` in the host, provider settings
+consistently use your real `www` origin (replace `https://www.kr7tech.example`) in the host, provider settings
 and your testing. Do not alternate between root and `www` when diagnosing
 cookie-backed writes.
 
@@ -1756,7 +1756,7 @@ activation requirements before taking real payments.
 1. Create/activate your provider account and select Test Mode initially.
 2. Obtain the test key ID and secret.
 3. Configure a webhook for:
-   `https://techhub365.in/api/webhooks/razorpay`.
+   `https://kr7tech.example/api/webhooks/razorpay` (replace the placeholder domain).
 4. Subscribe to **`payment_link.paid`**. This implementation uses Payment Links,
    not a generic client-side success callback.[^razorpay-links]
 5. Choose a private webhook secret and set the three Razorpay variables from

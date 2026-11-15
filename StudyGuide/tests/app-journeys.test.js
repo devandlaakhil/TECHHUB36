@@ -96,7 +96,7 @@ test.after(() => {
 });
 
 test("every page and every shared navigation destination is served through the production handler", async () => {
-  const visitor = client(), destinations = new Set();
+  const visitor = client(), destinations = new Set(), scripts = new Set();
   for (const file of fs.readdirSync(root).filter(name => name.endsWith(".html"))) {
     const response = await visitor.request(`/${encodeURIComponent(file)}`);
     assert.equal(response.status, 200, file);
@@ -107,15 +107,25 @@ test("every page and every shared navigation destination is served through the p
     assert.ok(header && footer, file);
     for (const link of [...allNodes(header), ...allNodes(footer)].filter(node => node.tagName === "a")) {
       const url = new URL(attr(link, "href"), origin);
-      assert.equal(url.origin, origin);
+      if (url.origin !== origin) {
+        assert.equal(url.href, "https://chat.whatsapp.com/FKxdeTehHKF7o4kjp1bigU");
+        assert.equal(attr(link, "target"), "_blank");
+        assert.match(attr(link, "rel"), /\bnoopener\b/);
+        assert.match(attr(link, "rel"), /\bnoreferrer\b/);
+        continue;
+      }
       destinations.add(`${url.pathname}${url.search}`);
     }
     for (const script of nodes.filter(node => node.tagName === "script" && attr(node, "src"))) {
       const url = new URL(attr(script, "src"), `${origin}/${encodeURIComponent(file)}`);
-      if (url.origin === origin) destinations.add(`${url.pathname}${url.search}`);
+      if (url.origin === origin) scripts.add(`${url.pathname}${url.search}`);
     }
   }
   for (const url of destinations) assert.equal((await visitor.request(url)).status, 200, url);
+  for (const url of scripts) {
+    const protectedAsset = ["/dotnet-roadmap.js", "/interview-studio.js"].includes(url);
+    assert.equal((await visitor.request(url)).status, protectedAsset ? 403 : 200, url);
+  }
   for (const url of ["/api/_password-auth.js", "/api/_concept-patterns.js", "/.env.local", "/server.js"]) {
     assert.equal((await visitor.request(url)).status, 404, url);
   }
@@ -186,6 +196,11 @@ test("account, membership and logout journey uses real handlers, signed webhooks
     assert.ok(questions.json.questions.length > 10);
     assert.equal((await learner.request("/api/concepts?id=micro-boundaries")).status, 200);
     assert.equal((await learner.request("/api/concepts?id=micro-pattern-strategy")).status, 403);
+    const practice = await learner.request("/DSA.html");
+    assert.match(practice.text, /"title":"Pro problem 50","pattern":"Pro practice","locked":true/);
+    assert.doesNotMatch(practice.text, /class LRUCache/);
+    assert.equal((await learner.request("/api/compile", { method:"POST",
+      body:{ language:"javascript", sourceCode:"console.log(1)", stdin:"", expectedOutput:"1" } })).status, 403);
     assert.equal((await learner.request("/api/checkout", { method:"POST",
       body:{ tier:"Go", provider:"stripe" } })).status, 409);
     assert.equal(merchantCalls.length, 1);
@@ -196,6 +211,10 @@ test("account, membership and logout journey uses real handlers, signed webhooks
     const lesson = await learner.request("/api/concepts?id=micro-pattern-strategy");
     assert.equal(lesson.status, 200);
     assert.match(lesson.json.lesson.example, /PercentageDiscount/);
+    const practice = await learner.request("/DSA.html");
+    assert.match(practice.text, /data-guide-access="pro"/);
+    assert.match(practice.text, /class LRUCache/);
+    assert.match(practice.text, /src="\/coding-runner.js"/);
     const purchases = await learner.request("/api/purchases");
     assert.equal(purchases.status, 200);
     assert.equal(purchases.json.plan, "Pro");
@@ -218,6 +237,9 @@ test("account, membership and logout journey uses real handlers, signed webhooks
     assert.equal((await learner.request("/api/checkout", { method:"POST",
       body:{ tier:"Pro", provider:"stripe" } })).status, 401);
     assert.equal((await learner.request("/api/questions?topic=C%23%20%2F%20.NET")).json.questions.length, 10);
+    assert.doesNotMatch((await learner.request("/DSA.html")).text, /class LRUCache/);
+    assert.equal((await learner.request("/api/compile", { method:"POST",
+      body:{ language:"javascript", sourceCode:"console.log(1)", stdin:"", expectedOutput:"1" } })).status, 401);
   });
 
   await t.test("a new login restores the same account and purchased membership", async () => {

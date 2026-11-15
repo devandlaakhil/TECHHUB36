@@ -4,12 +4,32 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
 const test = require("node:test");
+const { once } = require("node:events");
+const { Readable, Writable } = require("node:stream");
 const { guideTopics, learningGuideTopics, guidePracticeItems } = require("../api/_guide-preview");
 const { renderPreviewPage } = require("../api/serve-page");
-const { createServer } = require("../server");
+const { handleRequest } = require("../server");
+const { guidePreviewLimit } = require("../api/_pro-policy");
 const root = path.join(__dirname, "..");
 
-test("every guide exposes only its first ten items, with no paid titles, answers, or data scripts", () => {
+async function requestPage(url) {
+  const req = Readable.from([]);
+  req.method = "GET";
+  req.url = url;
+  req.headers = { host: "127.0.0.1" };
+  const chunks = [];
+  const res = new Writable({ write(chunk, encoding, done) { chunks.push(Buffer.from(chunk)); done(); } });
+  res.statusCode = 200;
+  const headers = {};
+  res.setHeader = (name, value) => { headers[name.toLowerCase()] = value; };
+  res.hasHeader = name => Object.hasOwn(headers, name.toLowerCase());
+  const finished = once(res, "finish");
+  await handleRequest(req, res);
+  await finished;
+  return { status: res.statusCode, body: Buffer.concat(chunks).toString("utf8") };
+}
+
+test("every guide respects its configured free limit, with no paid titles, answers, or data scripts", () => {
   const pages = require("../vercel.json").rewrites
     .map(route => new URL(route.destination, "http://localhost").searchParams.get("page"))
     .filter(Boolean);
@@ -18,14 +38,22 @@ test("every guide exposes only its first ten items, with no paid titles, answers
     const topics = learningGuideTopics(page, html, root, page);
     const preview = renderPreviewPage(page);
     const items = topics.flatMap(topic => topic.items);
-    assert.equal((preview.match(/data-free-item/g) || []).length, Math.min(10, items.length), page);
-    assert.equal((preview.match(/data-pro-item/g) || []).length, Math.max(0, items.length - 10), page);
-    for (const item of items.slice(10)) {
-      if (item.title.length > 20 && !items.slice(0, 10).some(free => free.html.includes(item.title))) {
+    const limit = guidePreviewLimit(page);
+    if (page !== "DSA.html") {
+      assert.equal((preview.match(/data-free-item/g) || []).length, Math.min(limit, items.length), page);
+      assert.equal((preview.match(/data-pro-item/g) || []).length, Math.max(0, items.length - limit), page);
+    } else {
+      assert.match(preview, /First 10 DSA problems are free/);
+      assert.doesNotMatch(preview, /title: "LRU Cache"|class LRUCache/);
+      assert.match(preview, /"title":"Pro problem 50","pattern":"Pro practice","locked":true/);
+    }
+    for (const item of items.slice(limit)) {
+      if (item.title.length > 20 && !items.slice(0, limit).some(free => free.html.includes(item.title))) {
         assert.ok(!preview.includes(item.html), `${page}: paid content must be absent`);
       }
     }
-    assert.doesNotMatch(preview, /const (?:DATA|problems|roadmapWeeks) =/);
+    assert.doesNotMatch(preview, /const (?:DATA|roadmapWeeks) =/);
+    if (page !== "DSA.html") assert.doesNotMatch(preview, /const problems =/);
     assert.doesNotMatch(preview, /src="(?:dotnet-roadmap|interview-studio)\.js"/);
     assert.match(preview, /data-pro-unlock/);
   }
@@ -47,20 +75,20 @@ test("appended concept exercises preserve guide indices and are absent from ever
   }
 });
 
-test("protected pages and data scripts cannot bypass preview access through URL casing", async t => {
-  const server = createServer();
-  await new Promise(resolve => server.listen(0, "127.0.0.1", resolve));
-  t.after(() => new Promise(resolve => server.close(resolve)));
-  const base = `http://127.0.0.1:${server.address().port}`;
-  for (const page of ["/C%23Dotnet.html", "/c%23dotnet.HTML", "/DSA.HTML", "/AZURECICD.HTML"]) {
-    const response = await fetch(`${base}${page}`);
+test("the production handler prevents protected-page and data-script bypasses through URL casing", async () => {
+  for (const page of ["/C%23Dotnet.html", "/c%23dotnet.HTML", "/DSA.HTML", "/AZURECICD.HTML", "/visual-interview-memory-lab.HTML"]) {
+    const response = await requestPage(page);
     assert.equal(response.status, 200);
-    assert.equal((await response.text()).match(/data-free-item/g)?.length, 10, page);
+    const html = response.body;
+    if (page === "/DSA.HTML") {
+      assert.match(html, /"title":"Pro problem 50","pattern":"Pro practice","locked":true/);
+      assert.doesNotMatch(html, /class LRUCache/);
+    } else assert.equal(html.match(/data-free-item/g)?.length, page.toLowerCase().includes("visual-interview-memory-lab") ? 30 : 10, page);
   }
   for (const asset of ["/dotnet-roadmap.js", "/DOTNET-ROADMAP.JS", "/interview-studio.js"]) {
-    const response = await fetch(`${base}${asset}`);
+    const response = await requestPage(asset);
     assert.equal(response.status, 403, asset);
-    assert.doesNotMatch(await response.text(), /roadmapWeeks|incidentStages/);
+    assert.doesNotMatch(response.body, /roadmapWeeks|incidentStages/);
   }
 });
 

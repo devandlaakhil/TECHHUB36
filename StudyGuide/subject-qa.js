@@ -7,8 +7,13 @@
     const topic = new URLSearchParams(search).get("topic");
     return subjects.some(subject => subject.topic === topic) ? topic : null;
   };
+  const filterSubjects = (query = "") => {
+    const words = query.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
+    return subjects.filter(subject => words.every(word =>
+      `${subject.topic} ${subject.category}`.toLocaleLowerCase().includes(word)));
+  };
   if (typeof module !== "undefined" && module.exports) {
-    module.exports = { selectedTopic };
+    module.exports = { selectedTopic, filterSubjects };
     return;
   }
 
@@ -33,14 +38,25 @@
   const directory = document.getElementById("interview-directory");
   const subjectNotes = document.getElementById("interview-subjects");
   if (subjectNotes) subjects.forEach(subject => {
-    const link = node("a", undefined, "study-note interview-note");
+    const link = node("a", undefined, "interview-topic-link");
     link.href = subject.href;
     link.dataset.interviewSubject = subject.topic;
-    link.append(node("span", subject.category, "note-label"), node("h3", subject.topic, "note-title"),
-      node("p", "Interview questions, detailed answers, and practical examples.", "note-copy"),
-      node("span", "Open interview questions", "note-action"));
+    link.append(node("span", subject.topic), node("small", subject.category));
     subjectNotes.append(link);
   });
+  const topicSearch = document.getElementById("interview-topic-search");
+  function filterDirectory() {
+    const matching = new Set(filterSubjects(topicSearch?.value || "").map(subject => subject.topic));
+    subjectNotes?.querySelectorAll("a").forEach(link => {
+      link.hidden = !matching.has(link.dataset.interviewSubject);
+    });
+    const count = document.getElementById("interview-topic-count");
+    if (count) count.textContent = matching.size
+      ? `${matching.size} topic${matching.size === 1 ? "" : "s"}`
+      : "No topics match. Try another search.";
+  }
+  topicSearch?.addEventListener("input", filterDirectory);
+  filterDirectory();
 
   function accessToken() {
     try {
@@ -83,6 +99,9 @@
     if (question.example) {
       const example = node("div", undefined, "qa-code-block");
       example.append(node("p", "Practical example", "qa-label"), node("pre", question.example, "experience-example"));
+      const practice = node("a", "Open code practice", "qa-practice-link");
+      practice.href = `/DSA.html?${new URLSearchParams({ topic: question.topic, question: question.id })}`;
+      example.append(practice);
       details.append(example);
     }
     card.append(header, details);
@@ -112,7 +131,9 @@
     const request = new AbortController();
     controller = request;
     const topic = selectedTopic(location.search);
-    if (directory) directory.open = !topic;
+    if (directory) directory.open = !topic || !window.matchMedia("(max-width:800px)").matches;
+    const currentSubject = document.getElementById("interview-current-subject");
+    if (currentSubject) currentSubject.textContent = topic || "Choose a subject";
     subjectNotes?.querySelectorAll("a").forEach(link => {
       if (link.dataset.interviewSubject === topic) link.setAttribute("aria-current", "page");
       else link.removeAttribute("aria-current");
@@ -120,11 +141,11 @@
     select.value = topic || "";
     list.replaceChildren();
     list.setAttribute("aria-busy", String(Boolean(topic)));
-    heading.textContent = topic ? `${topic} Interview Q&A` : "Choose your subject.";
-    document.title = topic ? `${topic} Interview Q&A | KR7Tech` : "Subject Interview Q&A | KR7Tech";
+    heading.textContent = topic ? `${topic} Interview Q&A` : "Choose your interview topic.";
+    document.title = topic ? `TechHub365 | ${topic} Interview Q&A` : "TechHub365 | Interview Q&A";
     description.textContent = topic
       ? `Study only ${topic} questions and answers here. For company-focused question banks, open the separate Company Interviews section.`
-      : "Open one subject to see only its questions and answers. Company-based practice is in the separate Company Interviews section.";
+      : "Pick a topic from the list to read its questions and answers. Switch topics here without going back to another page.";
     if (!topic) {
       status.textContent = "Choose a supported subject above. No other subjects' questions will be loaded.";
       return;
@@ -158,12 +179,28 @@
   }
 
   select.addEventListener("change", () => {
+    if (select.value === "visual-memory-lab") {
+      location.assign("/Visual-Interview-Memory-Lab.html");
+      return;
+    }
     const url = new URL(location.href);
     if (select.value) url.searchParams.set("topic", select.value);
     else url.searchParams.delete("topic");
     url.hash = "";
     history.pushState(null, "", url);
     loadTopic();
+  });
+  subjectNotes?.addEventListener("click", event => {
+    const link = event.target.closest("a[data-interview-subject]");
+    if (!link || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    const url = new URL(link.href, location.href);
+    history.pushState(null, "", url);
+    loadTopic();
+    document.dispatchEvent(new CustomEvent("kr7:subject-change", {
+      detail: { topic: link.dataset.interviewSubject },
+    }));
+    document.getElementById("subject-picker-heading")?.focus({ preventScroll: true });
   });
   window.addEventListener("popstate", loadTopic);
   document.addEventListener("kr7:pin-content", event => {

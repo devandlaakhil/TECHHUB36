@@ -92,8 +92,8 @@ test("every protected topic has a public preview with an upgrade path", () => {
   ];
   for (const page of pages) {
     const preview = servePage.renderPreviewPage(page);
-    assert.match(preview, /Learning guide preview/, page);
-    assert.match(preview, /Sign in and explore Pro/, page);
+    assert.match(preview, page === "DSA.html" ? /Problem &amp; code workspace/ : /Learning guide preview/, page);
+    assert.match(preview, page === "DSA.html" ? /First 10 DSA problems are free/ : /Sign in and explore Pro/, page);
   }
   const preview = servePage.renderPreviewPage("Dotnet-Roadmap.html");
   assert.match(preview, /data-local-pro-unlock/);

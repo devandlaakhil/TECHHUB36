@@ -5,6 +5,7 @@ const crypto = require("node:crypto");
 const test = require("node:test");
 const { chromium } = require("playwright");
 const { createServer } = require("../server");
+const { openNavigation } = require("./helpers/navigation");
 const lessons = require("../api/_concept-lessons");
 const { PATHS, orderLessons } = require("../concept-paths");
 
@@ -60,7 +61,7 @@ async function openSite(t, { paid = false } = {}) {
 test("Concepts is a separate searchable lesson library with per-item PIN and relocking", async t => {
   const { page, context, base, pin, errors } = await openSite(t);
   await page.goto(base);
-  await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "Concepts NEW", exact: true }).click();
+  await (await openNavigation(page, "Learn")).getByRole("link", { name: "Concepts NEW", exact: true }).click();
   await page.locator(".concept-card").first().waitFor();
   assert.equal(await page.locator(".concept-card").count(), lessons.length);
   assert.equal(await page.locator("#concept-categories button").count(), 1 + new Set(lessons.map(item => item.category)).size);
@@ -94,7 +95,7 @@ test("Concepts is a separate searchable lesson library with per-item PIN and rel
   await page.setViewportSize({ width: 390, height: 844 });
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   assert.equal(await page.locator("#compiler-status, #interview-reference-guides").count(), 0);
-  assert.equal(await page.getByRole("navigation", { name: "Learning sections" }).getByRole("link", { name: /^Coding Practice/ }).getAttribute("href"), "DSA.html");
+  assert.equal(await page.getByRole("navigation", { name: "Main navigation" }).getByRole("link", { name: "DSA + Compiler", exact: true }).getAttribute("href"), "/DSA.html");
   assert.equal((await context.request.get(`${base}/api/_concept-lessons.js`)).status(), 404);
   assert.deepEqual(errors, []);
 });
@@ -160,8 +161,19 @@ test("paid Pro opens full concepts and reaches the existing DSA compiler with ho
   await page.getByRole("button", { name: "Read full concept", exact: true }).first().click();
   await page.locator("#concept-reader:not([hidden])").waitFor();
   assert.match(await page.locator("#concept-status").innerText(), /verified Pro/);
-  await page.getByRole("navigation", { name: "Learning sections" }).getByRole("link", { name: /^Coding Practice/ }).click();
+  await (await openNavigation(page, "Practice")).getByRole("link", { name: "DSA + Compiler", exact: true }).click();
   await page.locator("#code-editor").waitFor();
+  assert.equal(await page.locator("#reference-solution").isVisible(), false);
+  assert.equal(await page.locator("#problem-navigator").isVisible(), false);
+  await page.locator("#toggle-solution").click();
+  assert.equal(await page.locator("#reference-solution").isVisible(), true);
+  await page.locator("#toggle-solution").click();
+  await page.locator("#next-problem").click();
+  await page.locator("#code-editor").fill("// browser draft");
+  await page.locator("#previous-problem").click();
+  await page.locator("#next-problem").click();
+  assert.equal(await page.locator("#code-editor").inputValue(), "// browser draft");
+  await page.locator("#previous-problem").click();
   let submissions = 0;
   await page.route("**/api/compile*", async route => {
     if (route.request().method() === "POST") {
@@ -201,8 +213,8 @@ test("course topic notes open explanations only, while interview banks stay in t
     assert.equal(url.pathname, "/Concepts.html");
     assert.ok(lessons.some(item => item.category === url.searchParams.get("category")));
   }
-  const navigation = page.getByRole("navigation", { name: "Learning sections" });
-  assert.equal(await navigation.locator('[aria-current="page"] .note-title').innerText(), "Courses");
+  const navigation = page.getByRole("navigation", { name: "Main navigation" });
+  assert.equal(await navigation.locator(".nav-course-link").getAttribute("aria-current"), "page");
   await page.locator("#course-search").fill("SQL & Database Engineering");
   assert.equal(await page.locator(".course-note").count(), 1);
   await page.setViewportSize({ width: 390, height: 844 });
@@ -229,10 +241,10 @@ test("course topic notes open explanations only, while interview banks stay in t
   await page.locator(".concept-card").first().waitFor();
   assert.equal(await page.locator(".concept-card").count(), lessons.length);
   assert.equal(await page.locator("#concept-categories [aria-pressed=true]").innerText(), "All");
-  await page.getByRole("navigation", { name: "Learning sections" }).getByRole("link", { name: /^Interview Q&A/ }).click();
-  await page.locator("#interview-subjects .interview-note").first().waitFor();
+  await (await openNavigation(page)).getByRole("link", { name: "Interview Q&A", exact: true }).click();
+  await page.locator("#interview-subjects .interview-topic-link").first().waitFor();
   const subjects = require("../learning-catalog").COURSES.filter(item => item.kind === "Interview Q&A");
-  assert.equal(await page.locator("#interview-subjects .interview-note").count(), subjects.length);
+  assert.equal(await page.locator("#interview-subjects .interview-topic-link").count(), subjects.length);
   assert.equal(await page.locator("#subject-qa-results .qa-card").count(), 0);
   assert.equal(questionRequests.length, 0);
   assert.equal(await page.locator("#compiler-status, #interview-reference-guides, #dsa-compiler").count(), 0);
@@ -294,8 +306,9 @@ test("expanded course outlines open protected teaching lessons with matching blu
     assert.deepEqual(badgeStyles, Array.from({ length: 2 }, () => ({
       text: "NEW", background: "rgb(29, 78, 216)", color: "rgb(255, 255, 255)",
     })));
-    assert.equal(await page.locator('[data-learning-sections] [data-section="courses"] .nav-new').innerText(), "NEW");
-    assert.equal(await page.locator('[data-learning-sections] [data-section="concepts"] .nav-new').innerText(), "NEW");
+    assert.equal(await page.locator("[data-learning-sections]").count(), 0);
+    assert.equal(await page.locator('header .nav-course-link .nav-new').textContent(), "NEW");
+    assert.equal(await page.locator('header .nav-concept-link .nav-new').textContent(), "NEW");
     await page.setViewportSize({ width: 390, height: 844 });
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   }

@@ -151,6 +151,10 @@
       renderToolbar(topicId(event.target.value));
       refreshButtons();
     });
+    document.addEventListener("kr7:subject-change", event => {
+      renderToolbar(topicId(event.detail.topic));
+      refreshButtons();
+    });
     window.addEventListener("popstate", () => {
       renderToolbar(topicId(new URLSearchParams(location.search).get("topic")));
       refreshButtons();

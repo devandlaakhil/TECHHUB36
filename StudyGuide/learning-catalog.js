@@ -6,6 +6,7 @@
   "use strict";
 
   const COURSES = [
+    { id: "visual-memory-lab", title: "Visual Interview Memory Lab", href: "Visual-Interview-Memory-Lab.html", category: "Backend", level: "All levels", kind: "Guide", description: "Thirty free C#/.NET questions with visual memory cues, diagrams, one-line answers and interview explanations. Pro unlocks the remaining lab." },
     { id: "angular-dotnet-fullstack", title: "Angular + .NET Fullstack: 0-5 years", href: "Fullstack-Angular-Dotnet.html", category: "Fullstack", level: "All levels", kind: "Roadmap", description: "A dedicated concept cluster: browser-to-database foundations, Angular and ASP.NET Core feature delivery, SQL, tests, security, and production recovery." },
     { id: "dotnet", title: "C# & .NET", href: "C%23Dotnet.html", category: "Backend", level: "All levels", kind: "Guide", description: "Programming foundations, async, APIs, data access, and runtime concepts." },
     { id: "azure", title: "Azure & CI/CD", href: "AZURECICD.html", category: "Cloud & DevOps", level: "All levels", kind: "Guide", description: "Cloud services, identity, messaging, deployment, and delivery fundamentals." },
@@ -45,8 +46,13 @@
     });
   }
 
+  function coachForCategory(category) {
+    return ["Frontend", "Angular", "JavaScript / TypeScript", "React"].includes(category) ? "Akhil" : "Krishna";
+  }
+
   return {
     COURSES,
+    coachForCategory,
     filterCourses,
     getCourse: id => COURSES.find(course => course.id === id),
     courseForPage: page => COURSES.find(course => decodeURIComponent(course.href) ===

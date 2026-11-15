@@ -26,7 +26,7 @@
         : "Online payments are not enabled on this deployment yet. Do not send money to an unofficial account."}`
         : "I cannot confirm the current Pro price yet. Please open Pro plans to check the amount before paying.",
       benefits: "Go includes unlimited subject/company Interview Q&A, one six-question AI interview per UTC day, and the first two concept lessons per subject. Pro includes all available content, unlimited AI interview sessions, the remote code runner, live 1:1 coaching, and course completion certificates. AI needs its configured model service; the runner needs its configured compiler service. Coaching schedules and certificate eligibility/issuance details are pending; checkout does not book a session or issue a certificate. Masterclass seats and job placements are not included. Individual item PIN access is not a Pro membership.",
-      free: "Read ten free questions per subject and ten lessons per guide. The separate Company Interviews library has ten free questions in total. Student schedules, subject search, and browser-local learning progress are free.",
+      free: "Read ten free questions per subject and ten lessons per standard guide. The Visual Interview Memory Lab offers thirty free questions with visual cues and interview answers. The separate Company Interviews library has ten free questions in total. Student schedules, subject search, and browser-local learning progress are free.",
       pin: "Enter the owner's PIN separately for each protected question or lesson. It opens only that item. Closing it, changing the company/topic filter, or revisiting the page locks it again. PIN confirmation is not a paid membership.",
       courses: "Courses contain topic explanations, worked examples, and revision notes, not interview question banks or a separately sold video library. Interview questions are in Interview Q&A. Pro includes completion certificates subject to published requirements; those issuance details are pending.",
       masterclass: "You can join the masterclass interest list. Dates, duration, capacity, platform, and fees are not published yet. Registering interest does not book a seat or charge you.",
@@ -91,9 +91,14 @@
   messages.setAttribute("aria-live", "polite");
   const suggestions = node("div", "", "support-suggestions");
   const links = node("p");
-  for (const [label, href] of [["Pro plans", "/Membership.html"], ["Courses", "/Courses.html"], ["Masterclass", "/Masterclass.html"]]) {
+  for (const [label, href] of [["Pro plans", "/Membership.html"], ["Courses", "/Courses.html"], ["Masterclass", "/Masterclass.html"],
+    ["WhatsApp community", "https://chat.whatsapp.com/FKxdeTehHKF7o4kjp1bigU"]]) {
     const link = node("a", label);
     link.href = href;
+    if (href.startsWith("https://chat.whatsapp.com/")) {
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+    }
     links.append(link, document.createTextNode(" "));
   }
   let pending = false;

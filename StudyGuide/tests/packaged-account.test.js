@@ -48,9 +48,24 @@ test("deployment artifact loads the MongoDB driver and serves password-only acco
   assert.equal(fs.existsSync(path.join(app, ".env.local")), false);
   assert.equal(fs.readFileSync(path.join(app, "api", "_shared.js"), "utf8").includes("offline-preview"), false);
   assert.equal(typeof require(path.join(app, "node_modules", "mongodb")).MongoClient, "function");
-  for (const route of ["/Account.html", "/account.js", "/account.css", "/site-navigation.js", "/site-navigation.css"]) {
+  for (const route of ["/Account.html", "/account.js", "/account.css", "/site-navigation.js", "/site-navigation.css",
+    "/site-theme.js", "/site-theme.css", "/coding-runner.js", "/dsa-workspace.css",
+    "/training-directory.js", "/training.css", "/visual-memory-lab.css", "/assets/kr7tech-icon.svg"]) {
     const result = await invoke(handler, route);
     assert.equal(result.status, 200, route);
+    if (route === "/site-theme.js" || route === "/site-theme.css") {
+      assert.equal(result.body, fs.readFileSync(path.join(root, route.slice(1)), "utf8"), route);
+    }
+    if (route.endsWith(".svg")) assert.equal(result.headers["content-type"], "image/svg+xml");
+    const lab = await invoke(handler, "/Visual-Interview-Memory-Lab.html");
+    assert.equal(lab.status, 200);
+    assert.equal((lab.body.match(/data-free-item/g) || []).length, 30);
+    assert.match(lab.body, /Visual Interview Memory Lab/);
+    assert.doesNotMatch(lab.body, /Transient vs Scoped vs Singleton/);
+    const coaching = await invoke(handler, "/Coaching.html");
+    assert.equal(coaching.status, 200);
+    assert.match(coaching.body, /data-training-coach="Akhil"/);
+    assert.match(coaching.body, /data-training-coach="Krishna"/);
     if (route.endsWith(".html")) {
       assert.match(result.body, /data-site-header/);
       assert.doesNotMatch(result.body, /otp-request-form|local-admin-form/);
@@ -66,6 +81,23 @@ test("deployment artifact loads the MongoDB driver and serves password-only acco
   assert.equal(JSON.parse(passwordAvailability.body).enabled, false);
   const localAvailability = await invoke(handler, "/api/local-admin-auth");
   assert.equal(JSON.parse(localAvailability.body).enabled, false);
+  const home = await invoke(handler, "/");
+  assert.equal(home.status, 200);
+  assert.match(home.body, /class="home-topic-search"/);
+  assert.doesNotMatch(home.body, /data-learning-sections/);
+  const interview = await invoke(handler, "/Subject-QA.html?topic=SQL");
+  assert.equal(interview.status, 200);
+  assert.match(interview.body, /class="interview-sidebar"/);
+  assert.match(interview.body, /<option value="visual-memory-lab">/);
+  assert.match(interview.body, /id="interview-topic-search"/);
+  for (const route of ["/DSA.html", "/DSA.HTML?problem=50", "/DSA.html?topic=SQL&question=sql-1"]) {
+    const practice = await invoke(handler, route);
+    assert.equal(practice.status, 200, route);
+    assert.match(practice.body, /src="\/coding-runner.js"/);
+    assert.match(practice.body, /id="toggle-problems"/);
+    assert.match(practice.body, /"title":"Pro problem 50","pattern":"Pro practice","locked":true/);
+    assert.doesNotMatch(practice.body, /class LRUCache/);
+  }
   const cluster = await invoke(handler, "/Fullstack-Angular-Dotnet.html");
   assert.equal(cluster.status, 200);
   assert.match(cluster.body, /data-site-header/);

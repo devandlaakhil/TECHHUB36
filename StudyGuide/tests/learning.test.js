@@ -11,7 +11,7 @@ function memoryStorage() {
 }
 
 test("subject discovery combines search words, category, level, kind, and saved filters", () => {
-  assert.equal(COURSES.length, 27);
+  assert.equal(COURSES.length, 28);
   assert.equal(new Set(COURSES.map(course => course.id)).size, COURSES.length);
   assert.deepEqual(filterCourses({ query: "SQL interview", category: "Data", kind: "Interview Q&A" }).map(item => item.id), ["sql-qa"]);
   assert.ok(filterCourses({ level: "Beginner" }).some(item => item.id === "dotnet"));
@@ -22,6 +22,7 @@ test("subject discovery combines search words, category, level, kind, and saved 
   assert.equal(courseForPage("C#Dotnet.html").id, "dotnet");
   assert.equal(courseForPage("AZURECICD - Copy.html").id, "azure");
   assert.equal(courseForPage("Fullstack-Angular-Dotnet.html").id, "angular-dotnet-fullstack");
+  assert.equal(courseForPage("Visual-Interview-Memory-Lab.html").id, "visual-memory-lab");
   assert.deepEqual(filterCourses({ query: "Angular .NET", kind: "Roadmap" })
     .map(course => course.id), ["angular-dotnet-fullstack"]);
 });

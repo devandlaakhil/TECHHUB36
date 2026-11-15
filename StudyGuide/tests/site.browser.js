@@ -5,6 +5,7 @@ const crypto = require("node:crypto");
 const test = require("node:test");
 const { chromium } = require("playwright");
 const { createServer } = require("../server");
+const { openNavigation } = require("./helpers/navigation");
 const { guidePracticeItems } = require("../api/_guide-preview");
 const csharpLockedCount = 177 + guidePracticeItems("C#Dotnet.html").length;
 
@@ -54,7 +55,7 @@ test("homepage navigation, persistent Student Plan, ten-item previews, and Pro P
   page.on("pageerror", error => errors.push(error.message));
 
   await page.goto(base);
-  assert.equal(await page.locator(".offering-card").count(), 13);
+  assert.equal(await page.locator("#learning-paths .home-goal-card").count(), 3);
   assert.equal(await page.locator("#experience-form, #student-plan-form, [data-free-item]").count(), 0);
   const links = await page.locator("a[href]").evaluateAll(nodes => [...new Set(nodes.map(node => node.href))]);
   for (const url of links) {
@@ -62,7 +63,7 @@ test("homepage navigation, persistent Student Plan, ten-item previews, and Pro P
     assert.equal(response.status(), 200, url);
   }
   assert.equal(await page.locator("header [data-pro-unlock]").count(), 0);
-  assert.equal(await page.locator('header .site-pin-button[href="/Membership.html#purchase"]').count(), 1);
+  assert.equal(await page.locator('header .site-pin-button[href="/Membership.html"]').count(), 1);
 
   await page.locator('#learning-paths a[href="Student-Plan.html"]').click();
   await page.locator('input[name="subjects"]').first().waitFor();
@@ -256,7 +257,7 @@ test("Interview Q&A navigation opens only its subject bank and preserves separat
   await page.goto(base);
   await page.getByRole("navigation", { name: "Main navigation" })
     .getByRole("link", { name: "Interview Q&A", exact: true }).click();
-  await page.locator("#interview-subjects .interview-note").first().waitFor();
+  await page.locator("#interview-subjects .interview-topic-link").first().waitFor();
   assert.equal(new URL(page.url()).pathname, "/Subject-QA.html");
   assert.equal(await page.locator("#course-topics, #concept-results, #dsa-compiler, #question-list").count(), 0);
   assert.equal(questionRequests.length, 0);
@@ -264,10 +265,10 @@ test("Interview Q&A navigation opens only its subject bank and preserves separat
   await page.locator("#subject-qa-results[aria-busy=false] .qa-card").first().waitFor();
   assert.equal(questionRequests.length, 1);
   assert.equal(questionRequests[0].searchParams.get("topic"), "SQL");
-  for (const [name, destination] of [["Courses", "/Courses.html"], ["Concept Library", "/Concepts.html"],
-    ["Company Interviews", "/Company-Interviews.html"], ["Interview Preparation", "/Interview-Preparation.html"]]) {
+  for (const [name, destination, group] of [["Courses", "/Courses.html", "Learn"], ["Concepts", "/Concepts.html", "Learn"],
+    ["Company Interviews", "/Company-Interviews.html", "Practice"], ["Interview Preparation", "/Interview-Preparation.html", "Practice"]]) {
     await page.goto(`${base}/Subject-QA.html`);
-    await page.getByRole("navigation", { name: "Learning sections" }).getByRole("link", { name: new RegExp(`^${name}`) }).click();
+    await (await openNavigation(page, group)).getByRole("link", { name: new RegExp(`^${name}`) }).click();
     assert.equal(new URL(page.url()).pathname, destination);
   }
 });

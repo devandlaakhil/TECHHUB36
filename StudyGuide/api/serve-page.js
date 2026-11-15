@@ -4,9 +4,9 @@ const { sendError, supabaseUrl, authenticatedUser } = require("./_shared");
 const { learningAccess } = require("./_learning-content");
 const { mongoEnabled } = require("./_mongo");
 const { consumeGrant } = require("./_pin-grants");
-const { escapeHtml, learningGuideTopics: guideTopics, renderTopics, renderGuidePractice } = require("./_guide-preview");
+const { escapeHtml, learningGuideTopics: guideTopics, renderTopics, renderGuidePractice, dsaPreviewHtml } = require("./_guide-preview");
 const { courseForPage } = require("../learning-catalog");
-const { FREE_PREVIEW_LIMIT } = require("./_pro-policy");
+const { VISUAL_MEMORY_PAGE, guidePreviewLimit } = require("./_pro-policy");
 const { renderSiteLayout } = require("./_site-layout");
 const { sendUnavailable } = require("./_availability");
 
@@ -23,6 +23,7 @@ const GUIDE_ASSETS = new Map([
 ]);
 
 const PROTECTED_PAGES = new Set([
+  VISUAL_MEMORY_PAGE,
   "Amazon-Design.html",
   "System-Design.html",
   "AZURECICD.html",
@@ -36,6 +37,10 @@ const PROTECTED_PAGES = new Set([
 ]);
 
 const PREVIEW_COURSES = {
+  [VISUAL_MEMORY_PAGE]: {
+    title: "Visual Interview Memory Lab",
+    description: "Remember C# and .NET through visual cues, diagrams, one-line answers and interview-ready explanations.",
+  },
   "Amazon-Design.html": {
     title: "Amazon-scale marketplace design",
     description: "Explore a marketplace architecture through its requirements, APIs, data ownership, checkout flow, and operational trade-offs.",
@@ -83,6 +88,11 @@ function renderPreviewPage(page, html, directory) {
   if (!course) throw new Error("Missing preview details for protected guide.");
   directory ||= __dirname.endsWith(`${path.sep}api`) ? path.dirname(__dirname) : process.cwd();
   html ??= fs.readFileSync(path.join(directory, page), "utf8");
+  if (page === VISUAL_MEMORY_PAGE) return renderVisualMemoryPage(html, directory);
+  if (page === "DSA.html") {
+    return renderSiteLayout(dsaPreviewHtml(html).replace(/<\/body>/i,
+      `<script src="/pro-access.js" defer></script>${LEARNING_SCRIPTS}</body>`), page);
+  }
   const topics = guideTopics(page, html, directory, course.title);
   const title = escapeHtml(course.title);
   const description = escapeHtml(course.description);
@@ -156,6 +166,13 @@ function renderPreviewPage(page, html, directory) {
 </html>`, page);
 }
 
+function renderVisualMemoryPage(html, directory, isPro = false) {
+  const topics = guideTopics(VISUAL_MEMORY_PAGE, html, directory, "C# and .NET visual questions");
+  const content = html.replace('<div data-visual-memory-items></div>', renderTopics(topics, VISUAL_MEMORY_PAGE, { unlocked: isPro }));
+  if (content === html) throw new Error("Visual memory lab content container is missing.");
+  return renderSiteLayout(isPro ? content.replace(/<html\b/i, '<html data-guide-access="pro"') : content, VISUAL_MEMORY_PAGE);
+}
+
 function sessionCookie(req) {
   const raw = req.headers.cookie || "";
   const match = raw.split(";").map(item => item.trim()).find(item => item.startsWith("visual_pro_session="));
@@ -207,13 +224,14 @@ module.exports = async function handler(req, res) {
 
     const html = fs.readFileSync(file, "utf8");
     if (itemIndex !== undefined) {
-      if (!isPro && !itemAccess && Number(itemIndex) >= FREE_PREVIEW_LIMIT) {
+      if (!isPro && !itemAccess && Number(itemIndex) >= guidePreviewLimit(page)) {
         return res.status(403).json({ error: "Enter the PIN for this Pro lesson." });
       }
       const item = guideTopics(page, html, path.dirname(file), PREVIEW_COURSES[page].title)[0].items[Number(itemIndex)];
       if (!item) return res.status(404).json({ error: "Guide item not found." });
       return res.status(200).json({ html: item.html });
     }
+    if (page === VISUAL_MEMORY_PAGE) return res.status(200).send(renderVisualMemoryPage(html, path.dirname(file), isPro));
     if (!isPro) return res.status(200).send(renderPreviewPage(page, html, path.dirname(file)));
     const toolbarContainer = /<main\b/i.test(html) ? /<main\b[^>]*>/i : /<body\b[^>]*>/i;
     const withLearningToolbar = html.replace(toolbarContainer, match =>

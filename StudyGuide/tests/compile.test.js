@@ -111,7 +111,7 @@ test("compiler validates the language and source/input/output sizes", async () =
   setupFetch();
 
   for (const body of [
-    { language: "javascript", sourceCode: "code", stdin: "", expectedOutput: "" },
+    { language: "ruby", sourceCode: "code", stdin: "", expectedOutput: "" },
     { language: "java", sourceCode: "x".repeat(32 * 1024 + 1), stdin: "", expectedOutput: "" },
     { language: "java", sourceCode: "code", stdin: "x".repeat(8 * 1024 + 1), expectedOutput: "" },
     { language: "java", sourceCode: "code", stdin: "", expectedOutput: "x".repeat(8 * 1024 + 1) },
@@ -120,6 +120,21 @@ test("compiler validates the language and source/input/output sizes", async () =
     await compileHandler(request("POST", body), res);
     assert.equal(res.statusCode, 400);
   }
+});
+
+test("JavaScript uses the Judge0 Node runtime with the same Pro gate and sandbox limits", async () => {
+  configure();
+  const calls = setupFetch();
+  const res = mockResponse();
+  await compileHandler(request("POST", {
+    language: "javascript", sourceCode: 'console.log("hello");', stdin: "", expectedOutput: "hello",
+  }), res);
+  assert.equal(res.statusCode, 202);
+  const submitted = JSON.parse(calls.find(call => call.url.pathname === "/submissions").options.body);
+  assert.equal(submitted.language_id, 63);
+  assert.equal(submitted.enable_network, false);
+  assert.equal(submitted.wall_time_limit, 5);
+  assert.equal(submitted.memory_limit, 128000);
 });
 
 test("compiler polling returns normalized accepted, compile-error, and timeout states", async () => {
