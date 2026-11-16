@@ -10,6 +10,12 @@ const root = path.join(__dirname, "..");
 const html = fs.readFileSync(path.join(root, "Account.html"), "utf8");
 const source = fs.readFileSync(path.join(root, "account.js"), "utf8");
 
+test("username/password account page clearly requires no email or OTP", () => {
+  assert.match(html, /no email address, email verification, or OTP is needed/i);
+  assert.match(html, /No email or OTP is used/i);
+  assert.doesNotMatch(html, /type=["']email["']|otp-request-form|email-auth/i);
+});
+
 async function open({ enabled = true, existing = false, sessionUnavailable = false, loseSignupSession = false, missingSignupCookie = false, search = "" } = {}) {
   const elements = new Map();
   function node(ast) {

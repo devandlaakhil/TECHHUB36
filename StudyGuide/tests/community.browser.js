@@ -73,6 +73,10 @@ test("Courses NEW navigation and consented learner stories work on the homepage 
   const feedback = [
     { name: "Test Learner One", rating: 4, feedback: "The async examples helped me explain cancellation. More practice tasks would help." },
     { name: "Test Learner Two", rating: 2, feedback: "I would like clearer prerequisites before the advanced sections." },
+    { name: "Test Learner Three", rating: 5, feedback: "The examples made it easier to explain my project decisions." },
+    { name: "Test Learner Four", rating: 3, feedback: "The practice questions helped me find topics to review." },
+    { name: "Test Learner Five", rating: 4, feedback: "The course helped me organize my preparation one step at a time." },
+    { name: "Test Learner Six", rating: 5, feedback: "The coding practice gave me a useful way to check my understanding." },
   ];
   await page.route("**/api/community**", route => route.fulfill({
     json: route.request().url().includes("action=feedback")
@@ -80,7 +84,8 @@ test("Courses NEW navigation and consented learner stories work on the homepage 
   }));
   await page.goto(base);
   await page.locator(".feedback-card").first().waitFor();
-  const coursesLink = page.getByRole("navigation", { name: "Main navigation" })
+  assert.equal(await page.locator(".feedback-card").count(), 4);
+  const coursesLink = (await openNavigation(page, "Learn"))
     .getByRole("link", { name: "Courses NEW", exact: true });
   assert.equal(await coursesLink.getAttribute("href"), "/Courses.html");
   assert.equal(await coursesLink.locator(".nav-new").innerText(), "NEW");
@@ -92,7 +97,7 @@ test("Courses NEW navigation and consented learner stories work on the homepage 
   assert.notEqual(badge.background, "rgba(0, 0, 0, 0)");
   assert.notEqual(badge.background, badge.color);
   assert.equal(await page.locator(".learning-encouragement h3").count(), 3);
-  for (const [index, item] of feedback.entries()) {
+  for (const [index, item] of feedback.slice(0, 4).entries()) {
     const card = page.locator(".feedback-card").nth(index);
     assert.equal(await card.locator(".feedback-name").innerText(), item.name);
     assert.equal(await card.locator("blockquote").innerText(), item.feedback);

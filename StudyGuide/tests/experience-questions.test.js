@@ -131,11 +131,14 @@ test("home page summarizes offerings and experience Q&A lives on the preparation
   assert.match(html, /students &amp; beginners/i);
   assert.match(html, /working engineers &amp; senior professionals/i);
   assert.match(html, /href="Membership.html\?plan=Pro#purchase"/);
-  assert.match(html, /href="C%23Dotnet\.html"/);
-  assert.match(html, /href="AZURECICD\.html"/);
-  assert.match(html, /href="System-Design\.html"/);
+  assert.match(html, /Prepare with a plan, not a pile of topics/i);
+  assert.match(html, /interviews at TCS and other companies/i);
+  assert.match(html, /href="Company-Interviews\.html"/);
+  assert.match(html, /href="Subject-QA\.html"/);
+  assert.match(html, /href="DSA\.html"/);
   assert.match(html, /href="Account.html"/);
-  assert.match(html, /Review coaching availability/);
+  assert.doesNotMatch(html, /data-training-directory="topics"|Topic guidance|coaching with Krishna/);
+  assert.match(html, /data-feedback-limit="4"/);
   assert.match(preparation, /id="experience-company"/);
   for (const topic of ["EF Core", "LINQ", "Behavioral", "ASP.NET Core", "REST APIs", "Testing", "Data Structures &amp; Algorithms", "DevOps", "Identity &amp; Security", "Microservices"]) {
     assert.ok(preparation.includes(`<option>${topic}</option>`), `${topic} is selectable`);

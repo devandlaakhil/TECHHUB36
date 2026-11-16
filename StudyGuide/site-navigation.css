@@ -1,6 +1,14 @@
 .site-header, .site-header *, .site-footer, .site-footer *, .site-breadcrumb { box-sizing:border-box; }
 [data-auth-provider="mongodb"] .google-auth { display:none !important; }
 [data-auth-provider="mongodb"] .auth-controls { display:none !important; }
+body { margin:0; padding:0; }
+body > main, body > .page, body > main.page, body > main.visual-memory-lab {
+  box-sizing:border-box;
+  width:100%;
+  min-width:0;
+  max-width:min(1160px,calc(100% - 40px));
+  margin-inline:auto;
+}
 .site-header {
   position:relative; z-index:30; width:100%; margin:0; padding:0;
   border:0; border-bottom:1px solid #31465c; border-radius:0;

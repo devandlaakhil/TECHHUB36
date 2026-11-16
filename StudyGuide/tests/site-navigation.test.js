@@ -170,32 +170,18 @@ test("named Learn and Practice menus expose the right destinations and identify 
   }
 });
 
-test("homepage discovery matches every interview topic and keeps learning, questions and coaching separate", () => {
+test("homepage promotes company preparation without rendering the topic coaching directory", () => {
   const elements = nodes(parse(renderSiteLayout(fs.readFileSync(path.join(root, "index.html"), "utf8"), "index.html")));
   const search = elements.find(node => node.tagName === "form" && attr(node, "role") === "search");
   assert.equal(attr(search, "action"), "Subjects.html");
   assert.equal(attr(search, "method"), "get");
   assert.ok(nodes(search).some(node => node.tagName === "input" && attr(node, "name") === "q"));
-  const { COURSES, filterCourses } = require("../learning-catalog");
-  assert.ok(filterCourses({ query: "SQL" }).length > 0);
-  const categories = new Set(require("../api/_concept-lessons").map(lesson => lesson.category));
-  const cards = elements.filter(node => attr(node, "class") === "home-topic-card");
-  assert.equal(cards.length, COURSES.filter(course => course.kind === "Interview Q&A").length);
-  for (const card of cards) {
-    const links = nodes(card).filter(node => node.tagName === "a");
-    assert.equal(links.length, 3);
-    const learn = new URL(attr(links[0], "href"), "http://site.test");
-    const interview = new URL(attr(links[1], "href"), "http://site.test");
-    if (attr(card, "data-training-topic") === "Behavioral") {
-      assert.equal(learn.pathname, "/Interview-Preparation.html");
-    } else {
-      assert.equal(learn.pathname, "/Concepts.html");
-      assert.ok(categories.has(learn.searchParams.get("category")));
-    }
-    assert.equal(interview.pathname, "/Subject-QA.html");
-    assert.ok(COURSES.some(course => course.kind === "Interview Q&A" && course.topic === interview.searchParams.get("topic")));
-    const coaching = new URL(attr(links[2], "href"), "http://site.test");
-    assert.equal(coaching.pathname, "/Coaching.html");
-    assert.equal(coaching.searchParams.get("topic"), interview.searchParams.get("topic"));
-  }
+  assert.equal(elements.some(node => attr(node, "data-training-directory") === "topics"), false);
+  assert.equal(elements.filter(node => attr(node, "class") === "home-topic-card").length, 0);
+  assert.equal(elements.filter(node => attr(node, "class") === "offering-card").length >= 3, true);
+  assert.ok(elements.some(node => attr(node, "href") === "Company-Interviews.html"));
+  assert.ok(elements.some(node => attr(node, "href") === "Subject-QA.html"));
+  assert.ok(elements.some(node => attr(node, "href") === "DSA.html"));
+  assert.ok(elements.some(node => attr(node, "data-feedback-limit") === "4"));
+  assert.equal(elements.filter(node => attr(node, "class") === "home-hero-step").length, 3);
 });

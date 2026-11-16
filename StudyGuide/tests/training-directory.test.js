@@ -26,9 +26,9 @@ function open(page, query = "") {
   };
 }
 
-test("home, courses and coaching directories cover every Q&A topic with the correct frontend mentor", () => {
+test("courses and coaching directories cover every Q&A topic with the correct frontend mentor", () => {
   const topics = COURSES.filter(course => course.kind === "Interview Q&A");
-  for (const page of ["index.html", "Courses.html", "Coaching.html"]) {
+  for (const page of ["Courses.html", "Coaching.html"]) {
     const ui = open(page);
     assert.deepEqual(ui.cards.map(card => card.dataset.trainingTopic), topics.map(topic => topic.topic), page);
     for (const [index, card] of ui.cards.entries()) {
@@ -52,6 +52,12 @@ test("home, courses and coaching directories cover every Q&A topic with the corr
     }
     assert.equal(ui.directory.querySelector("[data-training-filters]").hidden, false);
   }
+});
+
+test("homepage does not display topic mentoring cards", () => {
+  const homepage = renderSiteLayout(fs.readFileSync(path.join(root, "index.html"), "utf8"), "index.html");
+  assert.doesNotMatch(homepage, /data-training-directory="topics"|data-training-topic=/);
+  assert.doesNotMatch(homepage, /Topic guidance/);
 });
 
 test("topic and mentor searches combine with category filtering, explain empty results and reset cleanly", () => {

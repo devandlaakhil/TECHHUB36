@@ -69,7 +69,9 @@
     fetch("/api/community?action=feedback", { cache: "no-store" }).then(async response => {
       if (!response.ok) throw new Error();
       const { feedback } = await response.json();
-      if (!feedback.length) {
+      const limit = Number.parseInt(reviews.dataset.feedbackLimit || "", 10);
+      const visibleFeedback = Number.isInteger(limit) && limit >= 0 ? feedback.slice(0, limit) : feedback;
+      if (!visibleFeedback.length) {
         const empty = element("div", "");
         empty.className = "feedback-empty";
         empty.append(element("h3", "Your experience could inspire the next learner."),
@@ -77,7 +79,7 @@
         reviews.replaceChildren(empty);
         return;
       }
-      reviews.replaceChildren(...feedback.map(item => {
+      reviews.replaceChildren(...visibleFeedback.map(item => {
         const card = element("article", "");
         card.className = "offering-card feedback-card";
         const header = element("header", "");

@@ -1,10 +1,14 @@
 "use strict";
 
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
 const test = require("node:test");
 const { chromium } = require("playwright");
 const { createServer } = require("../server");
 const { openNavigation } = require("./helpers/navigation");
+
+const siteRoot = path.join(__dirname, "..");
 
 async function openSite(t, options = {}) {
   const server = createServer();
@@ -60,6 +64,33 @@ test("all website sections share the same header and mark their own destination"
   await nav.getByRole("link", { name: "AI Interviews", exact: true }).click();
   assert.equal(new URL(page.url()).pathname, "/AI-Interview.html");
   assert.deepEqual(errors, []);
+});
+
+test("all pages keep consistent content gutters on mobile and desktop", async t => {
+  const { page, base } = await openSite(t);
+  const files = fs.readdirSync(siteRoot).filter(file => file.toLowerCase().endsWith(".html")).sort();
+  for (const width of [320, 390, 768, 1280]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const file of files) {
+      const response = await page.goto(`${base}/${encodeURIComponent(file)}`, { waitUntil: "domcontentloaded" });
+      assert.equal(response.status(), 200, file);
+      const layout = await page.evaluate(() => {
+        const content = document.querySelector("body > main, body > .page, body > .container");
+        if (!content) return { scrollWidth: document.documentElement.scrollWidth };
+        const bounds = content.getBoundingClientRect();
+        return {
+          left: bounds.left,
+          right: innerWidth - bounds.right,
+          scrollWidth: document.documentElement.scrollWidth,
+        };
+      });
+      assert.ok(layout.scrollWidth <= width, `${file} overflows at ${width}px`);
+      if (layout.left !== undefined) {
+        assert.ok(layout.left >= 20, `${file} has less than 20px left gutter at ${width}px`);
+        assert.ok(layout.right >= 20, `${file} has less than 20px right gutter at ${width}px`);
+      }
+    }
+  }
 });
 
 test("mobile navigation supports keyboard dismissal, history, resizing, and separate destinations", async t => {
