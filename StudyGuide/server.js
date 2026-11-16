@@ -3,6 +3,7 @@
 const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
+const crypto = require("node:crypto");
 const { renderSiteLayout } = require("./api/_site-layout");
 const { mongoEnabled } = require("./api/_mongo");
 const { sameOrigin } = require("./api/_mongo-auth");
@@ -286,12 +287,24 @@ function createServer() {
   return http.createServer(handleRequest);
 }
 
-function loadLocalEnvironment(file = path.join(ROOT, ".env.local")) {
+function loadLocalEnvironment(file = path.join(ROOT, ".env.local"), atlasFile) {
   if (process.env.NODE_ENV === "production" || process.env.VERCEL_ENV === "production") return;
-  try {
-    process.loadEnvFile(file);
-  } catch (error) {
-    if (error.code !== "ENOENT") throw error;
+  if (arguments.length === 0) atlasFile = path.resolve(ROOT, "..", "atlas-credentials.env");
+  for (const envFile of [file, atlasFile].filter(Boolean)) {
+    try {
+      process.loadEnvFile(envFile);
+    } catch (error) {
+      if (error.code !== "ENOENT") throw error;
+    }
+  }
+  if (atlasFile && process.env.MONGODB_URI &&
+      (!process.env.AUTH_PROVIDER || process.env.AUTH_PROVIDER === "mongodb")) {
+    process.env.AUTH_PROVIDER = "mongodb";
+    if (!process.env.MONGODB_DATABASE) process.env.MONGODB_DATABASE = "kr7tech";
+    if (!process.env.PUBLIC_APP_URL) {
+      process.env.PUBLIC_APP_URL = `http://127.0.0.1:${Number(process.env.PORT) || 10000}`;
+    }
+    if (!process.env.AUTH_OTP_SECRET) process.env.AUTH_OTP_SECRET = crypto.randomBytes(32).toString("hex");
   }
 }
 

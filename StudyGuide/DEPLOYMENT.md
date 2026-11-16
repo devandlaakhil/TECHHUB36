@@ -154,6 +154,14 @@ satisfies the existing database schema; it is not shown as a real email or sent
 to payment notification services. The account does not claim another person's
 email. There is no automatic linking to an existing OTP account by email.
 
+For local development in this workspace, `npm start` reads the sibling
+`atlas-credentials.env` file when it is present; `.env.local` and existing
+process environment variables take precedence. With an Atlas URI configured,
+local startup defaults to the `kr7tech` database, a loopback app origin, and a
+fresh process-local signing secret. Production does not load this file or use
+these defaults; configure the production environment variables privately in
+the host dashboard.
+
 Private indexes are created on first database connection. MongoDB's TTL monitor
 cleans up expired authentication records; authorization explicitly checks
 expiry and does not rely on immediate TTL deletion. Session cookies are

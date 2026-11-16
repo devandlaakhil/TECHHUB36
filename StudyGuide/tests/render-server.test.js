@@ -72,6 +72,47 @@ test("production ignores local project settings and missing optional files do no
   assert.doesNotThrow(() => loadLocalEnvironment(path.join(directory, "not-present.env")));
 });
 
+test("development loads Atlas credentials and enables local MongoDB account signup defaults", t => {
+  const names = ["NODE_ENV", "VERCEL_ENV", "PORT", "MONGODB_URI", "MONGODB_USERNAME", "MONGODB_PASSWORD",
+    "AUTH_PROVIDER", "MONGODB_DATABASE", "PUBLIC_APP_URL", "AUTH_OTP_SECRET"];
+  const original = Object.fromEntries(names.map(name => [name, process.env[name]]));
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), "kr7-atlas-env-"));
+  const atlasFile = path.join(directory, "atlas-credentials.env");
+  const localFile = path.join(directory, ".env.local");
+  fs.writeFileSync(atlasFile, [
+    "MONGODB_URI=mongodb+srv://atlas-user:atlas-pass@cluster.example.test/",
+    "MONGODB_USERNAME=atlas-user",
+    "MONGODB_PASSWORD=atlas-pass",
+  ].join("\n"));
+  fs.writeFileSync(localFile, "MONGODB_DATABASE=techhub_test\nPUBLIC_APP_URL=http://localhost:9000\n");
+  process.env.NODE_ENV = "development";
+  delete process.env.VERCEL_ENV;
+  for (const name of names.slice(2)) delete process.env[name];
+  t.after(() => {
+    for (const name of names) {
+      if (original[name] === undefined) delete process.env[name];
+      else process.env[name] = original[name];
+    }
+    fs.unlinkSync(atlasFile);
+    fs.unlinkSync(localFile);
+    fs.rmdirSync(directory);
+  });
+
+  loadLocalEnvironment(localFile, atlasFile);
+  assert.equal(process.env.AUTH_PROVIDER, "mongodb");
+  assert.equal(process.env.MONGODB_URI, "mongodb+srv://atlas-user:atlas-pass@cluster.example.test/");
+  assert.equal(process.env.MONGODB_DATABASE, "techhub_test");
+  assert.equal(process.env.PUBLIC_APP_URL, "http://localhost:9000");
+  assert.match(process.env.AUTH_OTP_SECRET, /^[a-f0-9]{64}$/);
+  assert.equal(require("../api/_password-auth").passwordConfigured(), true);
+
+  for (const name of names.slice(2)) delete process.env[name];
+  loadLocalEnvironment(path.join(directory, "missing.env"), atlasFile);
+  assert.equal(process.env.MONGODB_DATABASE, "kr7tech");
+  assert.equal(process.env.PUBLIC_APP_URL, "http://127.0.0.1:10000");
+  assert.match(process.env.AUTH_OTP_SECRET, /^[a-f0-9]{64}$/);
+});
+
 test("Render server serves health, static assets, and protected page previews", async t => {
   const server = createServer();
   await new Promise((resolve, reject) => {
