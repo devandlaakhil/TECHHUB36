@@ -181,7 +181,7 @@ test("concept API rejects malformed selections, unknown lessons, and write metho
   assert.equal(res.statusCode, 405);
   assert.equal(res.headers.Allow, "GET");
 });
-test("Go opens only the first two lessons per subject and inactive Go cannot open them", async () => {
+test("Go cannot open full concept lessons, while inactive Go remains locked", async () => {
   process.env.SUPABASE_URL = "https://supabase.test";
   process.env.SUPABASE_ANON_KEY = "test-anon";
   process.env.SUPABASE_SERVICE_ROLE_KEY = "test-service";
@@ -192,23 +192,25 @@ test("Go opens only the first two lessons per subject and inactive Go cannot ope
   const headers = { authorization: "Bearer verified-go" };
   const catalog = await get(undefined, headers);
   assert.equal(catalog.body.access.premium, false);
-  assert.equal(catalog.body.access.plan, "Go");
-  const included = Object.values(PATHS).flatMap(path => path.lessonIds.slice(0, 2));
-  assert.deepEqual([...catalog.body.access.includedLessonIds].sort(), [...included].sort());
+  assert.equal(catalog.body.access.plan, undefined);
+  assert.equal(catalog.body.access.includedLessonIds, undefined);
   for (const [category, path] of Object.entries(PATHS)) {
     for (const id of path.lessonIds) {
       const res = await get(id, headers);
-      assert.equal(res.statusCode, path.lessonIds.indexOf(id) < 2 ? 200 : 403, `${category}: ${id}`);
-      if (res.statusCode === 200) assert.equal(res.body.lesson.id, id);
+      assert.equal(res.statusCode, 403, `${category}: ${id}`);
     }
   }
   entitlement = { tier: "Go", active: false };
-  assert.equal((await get(included[0], headers)).statusCode, 403);
+  assert.equal((await get(PATHS[".NET"].lessonIds[0], headers)).statusCode, 403);
 });
 test("compiler configuration status is honest and does not expose provider settings", async () => {
   const absent = response();
   await config({ method: "GET" }, absent);
   assert.equal(absent.body.compilerConfigured, false);
+  assert.deepEqual(absent.body.planBenefits.Go, { interviewQA: true, concepts: false, aiInterview: false });
+  assert.deepEqual(absent.body.planBenefits.Pro, {
+    interviewQA: true, concepts: true, aiInterview: true, allContent: true,
+  });
   process.env.JUDGE0_API_URL = "https://private-compiler.test";
   process.env.JUDGE0_API_TOKEN = "private-test-token";
   const configured = response();

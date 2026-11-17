@@ -37,28 +37,20 @@ declare
   plan text;
   session public.ai_interview_sessions%rowtype;
   claim uuid := gen_random_uuid();
-  day_start timestamptz := date_trunc('day', now() at time zone 'UTC') at time zone 'UTC';
 begin
   if p_user_id is null or p_context_hash is null or p_context_hash !~ '^[0-9a-f]{64}$'
     or p_turn is null or p_turn < 0 or p_turn > 6 then
     return jsonb_build_object('error', 'invalid');
   end if;
   select tier into plan from public.entitlements
-    where user_id = p_user_id and active and tier in ('Go', 'Pro')
-    order by case when tier = 'Pro' then 0 else 1 end limit 1;
+    where user_id = p_user_id and active and tier = 'Pro'
+    limit 1;
   if plan is null then return jsonb_build_object('error', 'membership'); end if;
 
   if p_session_id is null then
     if p_turn <> 0 then return jsonb_build_object('error', 'invalid'); end if;
     -- One transaction lock serializes concurrent starts for this user across all servers.
     perform pg_advisory_xact_lock(hashtextextended(p_user_id::text, 0));
-    if plan = 'Go' and exists (
-      select 1 from public.ai_interview_sessions
-      where user_id = p_user_id and created_at >= day_start
-        and state <> 'failed' and (state <> 'starting' or busy_until > now())
-    ) then
-      return jsonb_build_object('error', 'quota', 'resetAt', day_start + interval '1 day');
-    end if;
     insert into public.ai_interview_sessions(user_id, context_hash, state, claim_id, busy_until)
       values (p_user_id, p_context_hash, 'starting', claim, now() + interval '45 seconds')
       returning * into session;

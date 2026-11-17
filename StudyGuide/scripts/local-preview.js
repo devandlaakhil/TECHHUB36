@@ -232,8 +232,8 @@ function createPreview({ username, credential, userId = crypto.randomUUID(), por
       providers: { razorpay: false, stripe: false, paypal: false },
       plans: { L1: 500, L2: 500, L3: 500, Go:tierAmount("Go") / 100, Pro:tierAmount("Pro") / 100 },
       planOffers:planOffers(),
-      planBenefits: { Go: { aiInterviewsPerDay: 1, conceptLessonsPerSubject: 2 },
-        Pro: { aiInterviewsPerDay: null, conceptLessonsPerSubject: null } },
+      planBenefits: { Go: { interviewQA: true, concepts: false, aiInterview: false },
+        Pro: { interviewQA: true, concepts: true, aiInterview: true, allContent: true } },
       paypalAmounts: {}, paypalTiers: { Go: false, Pro: false },
     });
     if (["/api/email-auth", "/api/google-auth", "/api/pro-access", "/api/local-pro-access"].includes(pathname)) {
@@ -250,8 +250,12 @@ function createPreview({ username, credential, userId = crypto.randomUUID(), por
     }
     const end = res.end;
     res.end = function (body, ...args) {
-      if (typeof body === "string" && String(res.getHeader("Content-Type") || "").startsWith("text/html")) {
-        body = body.replace(/<body\b[^>]*>/i, match => `${match}${BANNER}`);
+      if ((typeof body === "string" || Buffer.isBuffer(body)) &&
+          String(res.getHeader("Content-Type") || "").startsWith("text/html")) {
+        const isBuffer = Buffer.isBuffer(body);
+        const html = isBuffer ? body.toString("utf8") : body;
+        const previewHtml = html.replace(/<body\b[^>]*>/i, match => `${match}${BANNER}`);
+        body = isBuffer ? Buffer.from(previewHtml) : previewHtml;
       }
       return end.call(this, body, ...args);
     };

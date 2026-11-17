@@ -154,7 +154,7 @@ html[data-theme] .home-hero { background:radial-gradient(ellipse at 90% 10%,colo
   .home-goals { grid-template-columns:minmax(0,1fr); }
   .home-topic-grid { grid-template-columns:minmax(0,1fr); gap:14px; }
   .home-topic-card { padding:20px; }
-  .hero { padding:48px 0 32px; }
+  .hero:not(.home-hero) { padding:48px 20px 32px; }
   .topnav { gap:10px 16px; }
   .content-section { padding:32px 0; }
   .pro-panel { padding:22px; }

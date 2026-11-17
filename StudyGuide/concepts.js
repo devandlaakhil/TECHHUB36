@@ -12,7 +12,6 @@
   let lessons = [];
   let premium = false;
   let verificationUnavailable = false;
-  let includedLessonIds = new Set();
   let selectedCategory = "All";
   let generation = 0;
   let controller;
@@ -87,7 +86,6 @@
     reader.append(actions);
     reader.hidden = false;
     status.textContent = premium ? "Opened with verified Pro access."
-      : includedLessonIds.has(lesson.id) ? "Opened with Go access: one of your included lessons."
       : "This lesson only is open. Other lessons still require their own PIN.";
     heading.focus();
   }
@@ -133,19 +131,18 @@
       });
       pathPanel.append(heading, node("p", path.goal),
         node("p", `Before you start: ${path.prerequisite}`), outline,
-        node("p", "Follow the order below. Go includes the first 2 lessons per subject; Pro includes all. An owner's item PIN opens one lesson separately."));
+          node("p", "Follow the order below. Pro includes all full lessons. An owner's item PIN opens one lesson separately."));
     }
     visible.forEach(item => {
       const card = node("article", undefined, "offering-card concept-card");
       card.id = `concept-card-${item.id}`;
       const step = selectedCategory === "All" ? "" : ` | Step ${ordered.indexOf(item) + 1}`;
-      const included = includedLessonIds.has(item.id);
-      card.append(node("span", `${item.category}${step} | ${included ? "GO INCLUDED" : "PRO"}`, "badge gold"),
+      card.append(node("span", `${item.category}${step} | PRO`, "badge gold"),
         node("h3", item.title), node("p", item.summary));
-      const button = node("button", premium || included ? "Read full concept" : "Pro - Enter PIN for lesson", "button compact");
+      const button = node("button", premium ? "Read full concept" : "Pro - Enter PIN for lesson", "button compact");
       button.type = "button";
       button.dataset.conceptId = item.id;
-      if (premium || included) button.addEventListener("click", () => openPaidLesson(button, item.id));
+      if (premium) button.addEventListener("click", () => openPaidLesson(button, item.id));
       else {
         button.dataset.proUnlock = "";
         button.dataset.proResource = `concept:${item.id}`;
@@ -156,9 +153,7 @@
       results.append(card);
     });
     status.textContent = visible.length
-      ? `${visible.length} concept lessons. ${premium ? "Verified Pro access." : includedLessonIds.size
-        ? "Go includes the first 2 lessons per subject; remaining explanations require Pro or an item PIN."
-        : "Full explanations require a separate lesson PIN or paid membership."}`
+      ? `${visible.length} concept lessons. ${premium ? "Verified Pro access." : "Full explanations require Pro or a separate lesson PIN."}`
       : "No matching concepts. Try another category or search.";
     if (verificationUnavailable) status.textContent += " Account access is temporarily unavailable; paid lessons stay locked.";
   }
@@ -205,7 +200,6 @@
       lessons = fixedCategory ? data.lessons.filter(item => item.category === fixedCategory) : data.lessons;
       premium = data.access?.premium === true;
       verificationUnavailable = data.access?.verificationUnavailable === true;
-      includedLessonIds = new Set(data.access?.includedLessonIds || []);
       (fixedCategory ? [fixedCategory] : ["All", ...new Set(lessons.map(item => item.category))]).forEach(category => {
         const button = node("button", category, "button secondary compact");
         button.type = "button";

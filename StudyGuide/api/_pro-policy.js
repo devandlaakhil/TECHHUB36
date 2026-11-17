@@ -1,7 +1,6 @@
 "use strict";
 
 const FREE_PREVIEW_LIMIT = 10;
-const GO_CONCEPT_LIMIT = 2;
 const VISUAL_MEMORY_PAGE = "Visual-Interview-Memory-Lab.html";
 
 function guidePreviewLimit(page) {
@@ -18,13 +17,6 @@ function hasInterviewAccess(entitlements) {
   return membershipTier(entitlements) !== "Free";
 }
 
-function goConceptIds(lessons) {
-  const { orderLessons } = require("../concept-paths");
-  return [...new Set(lessons.map(item => item.category))]
-    .flatMap(category => orderLessons(category, lessons.filter(item => item.category === category))
-      .slice(0, GO_CONCEPT_LIMIT).map(item => item.id));
-}
-
 function freePreviewIds(items, groupBy = () => "") {
   const counts = new Map();
   const free = new Set();
@@ -37,5 +29,5 @@ function freePreviewIds(items, groupBy = () => "") {
   return free;
 }
 
-module.exports = { FREE_PREVIEW_LIMIT, GO_CONCEPT_LIMIT, freePreviewIds, membershipTier,
-  hasInterviewAccess, goConceptIds, VISUAL_MEMORY_PAGE, guidePreviewLimit };
+module.exports = { FREE_PREVIEW_LIMIT, freePreviewIds, membershipTier,
+  hasInterviewAccess, VISUAL_MEMORY_PAGE, guidePreviewLimit };

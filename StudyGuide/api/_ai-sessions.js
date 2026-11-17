@@ -27,8 +27,7 @@ async function claimSession(userId, body) {
   });
   if (result?.error) {
     const errors = {
-      membership: [403, "AI interviews require an active Go or Pro membership."],
-      quota: [429, "Go includes one AI interview per day. Your next allowance starts at 00:00 UTC (05:30 India time)."],
+      membership: [403, "AI interviews require an active Pro membership."],
       session: [409, "This interview is expired, complete, or out of sequence. Start a new session or retry the current answer."],
       busy: [409, "This interview already has a request in progress. Wait before trying again."],
       invalid: [400, "Invalid interview session request."],
@@ -37,7 +36,7 @@ async function claimSession(userId, body) {
     return { status, error, ...(result.resetAt ? { resetAt: result.resetAt } : {}) };
   }
   if (!UUID.test(result?.sessionId || "") || !UUID.test(result?.claimId || "") ||
-      !["Go", "Pro"].includes(result?.plan)) throw new Error("Interview access is not configured.");
+      result?.plan !== "Pro") throw new Error("Interview access is not configured.");
   return result;
 }
 

@@ -126,22 +126,15 @@ test("stage links focus the right card after asynchronous catalog loading withou
   }
 });
 
-test("Go opens its included lesson through the API and leaves later fullstack lessons PIN-scoped", async () => {
-  const ui = await open("Fullstack-Angular-Dotnet.html", "", {
-    access: { includedLessonIds: fullstack.slice(0, 2).map(lesson => lesson.id) },
-  });
+test("Go leaves all fullstack lessons PIN-scoped", async () => {
+  const ui = await open("Fullstack-Angular-Dotnet.html");
   const cards = ui.element("concept-results").children;
-  assert.equal(cards[0].querySelector("button").dataset.proUnlock, undefined);
-  const locked = cards[2].querySelector("button");
-  assert.equal(locked.dataset.proResource, `concept:${fullstack[2].id}`);
-  assert.equal(locked.events.has("click"), false);
-  await cards[0].querySelector("button").events.get("click")();
-  assert.equal(ui.element("concept-reader").hidden, false);
-  assert.ok(ui.element("concept-reader").textContent.includes(fullstack[0].what));
-  assert.match(ui.element("concept-status").textContent, /Go access/);
-  ui.element("concept-search").events.get("input")();
-  assert.equal(ui.element("concept-reader").hidden, true);
-  assert.equal(ui.element("concept-reader").children.length, 0);
+  for (const [index, lesson] of fullstack.entries()) {
+    const button = cards[index]?.querySelector("button");
+    assert.equal(button.dataset.conceptId, lesson.id);
+    assert.equal(button.dataset.proResource, `concept:${lesson.id}`);
+    assert.equal(button.events.has("click"), false);
+  }
 });
 
 test("Courses sends the fullstack course to its dedicated cluster and keeps other courses in Concepts", async () => {

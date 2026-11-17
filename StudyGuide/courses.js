@@ -29,7 +29,7 @@
     results.replaceChildren(...visible.map(course => {
       const card = node("article", undefined, "study-note course-note");
       card.dataset.courseCategory = course.category;
-      card.append(node("span", `${course.category} | Go: first 2 lessons / Pro: all`, "note-label"),
+      card.append(node("span", `${course.category} | Pro: full lessons`, "note-label"),
         node("h3", course.title, "note-title"),
         node("p", course.path?.goal || "Understand the concept, follow the flow, and learn from worked examples.", "note-copy"));
       card.append(node("p", course.category === "Angular + .NET Fullstack"
@@ -46,7 +46,7 @@
       return card;
     }));
     status.textContent = visible.length
-      ? `${visible.length} concept courses. Outlines are public; Go includes 2 lessons per subject, Pro includes all, and an item PIN opens one lesson.`
+      ? `${visible.length} concept courses. Outlines are public; Pro includes all full lessons, and an item PIN opens one lesson.`
       : "No matching courses. Try a subject or concept name.";
   }
   search.addEventListener("input", render);

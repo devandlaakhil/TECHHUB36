@@ -234,29 +234,28 @@ test("sign-out revokes the server session; expiry and disabled accounts ignore f
   assert.equal(db.collection("auth_sessions").rows.length, 0);
 });
 
-test("MongoDB paid access preserves Go limits, failed-start retries, and session ownership", async () => {
+test("MongoDB Go cannot start AI interviews; Pro sessions preserve retries and ownership", async () => {
   const student = await login();
   const userId = student.user.id;
   await db.collection("entitlements").insertOne({ id: crypto.randomUUID(), user_id: userId, tier: "Go", active: true });
   const body = { action: "start", topic: "SQL", experience: "3-5 years", role: "Developer", turns: [] };
+  assert.equal((await claimSession(userId, body)).status, 403);
+  await db.collection("entitlements").insertOne({ id: crypto.randomUUID(), user_id: userId, tier: "Pro", active: true });
   const first = await claimSession(userId, body);
-  assert.equal(first.plan, "Go");
-  assert.equal((await claimSession(userId, body)).status, 429);
+  assert.equal(first.plan, "Pro");
   assert.equal(await settleSession(userId, first, 0, false), true);
   const next = await claimSession(userId, body);
-  assert.equal(next.plan, "Go");
+  assert.equal(next.plan, "Pro");
   assert.equal(await settleSession(userId, next, 0, true), true);
-  assert.equal((await claimSession(userId, body)).status, 429);
+  const another = await claimSession(userId, body);
+  assert.equal(another.plan, "Pro");
   const answer = { ...body, action: "answer", interviewId: next.sessionId, turns: [{}] };
   const claim = await claimSession(userId, answer);
-  assert.equal(claim.plan, "Go");
+  assert.equal(claim.plan, "Pro");
   assert.equal((await claimSession(userId, answer)).status, 409);
   assert.equal(await settleSession("other-user", claim, 1, true), false);
   assert.equal(await settleSession(userId, claim, 1, true), true);
   assert.equal((await claimSession(userId, answer)).status, 409);
-  await db.collection("entitlements").insertOne({ id: crypto.randomUUID(), user_id: userId, tier: "Pro", active: true });
-  assert.equal((await claimSession(userId, body)).plan, "Pro");
-  assert.equal((await claimSession(userId, body)).plan, "Pro");
 });
 
 test("payment activation matches stored purchases and remains idempotent after a manual revocation", async () => {

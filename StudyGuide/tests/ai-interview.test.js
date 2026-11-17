@@ -261,13 +261,13 @@ test("AI interview provider errors do not expose the API key", async () => {
   assert.equal(JSON.stringify(res.body).includes("gemini-secret-test"), false);
 });
 
-test("production ignores the anonymous flag and membership or quota denial never calls Gemini", async () => {
+test("production ignores the anonymous flag and membership denial never calls Gemini", async () => {
   configure();
   process.env.AI_INTERVIEW_ALLOW_ANONYMOUS = "true";
   const anonymous = mockResponse();
   await aiInterviewHandler(request({ action: "start", topic: "Azure", experience: "0-2 years", role: "" }, null), anonymous);
   assert.equal(anonymous.statusCode, 401);
-  for (const [error, status] of [["membership", 403], ["quota", 429], ["busy", 409], ["session", 409]]) {
+  for (const [error, status] of [["membership", 403], ["busy", 409], ["session", 409]]) {
     let geminiCalls = 0;
     global.fetch = async url => {
       if (new URL(url).pathname === "/auth/v1/user") return response({ id: "user-123" });

@@ -182,7 +182,7 @@ module.exports = async function handler(req, res) {
 
     if (!localTesting(req)) {
       user = await authenticatedUser(req);
-      if (!user) return sendJson(res, 401, { error: "Sign in with Go or Pro to start an AI practice interview." });
+      if (!user) return sendJson(res, 401, { error: "Sign in with an active Pro membership to start an AI practice interview." });
       try {
         claim = await claimSession(user.id, body);
       } catch {

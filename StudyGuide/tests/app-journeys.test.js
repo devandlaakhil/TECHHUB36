@@ -194,7 +194,7 @@ test("account, membership and logout journey uses real handlers, signed webhooks
     const questions = await learner.request("/api/questions?topic=C%23%20%2F%20.NET");
     assert.equal(questions.status, 200);
     assert.ok(questions.json.questions.length > 10);
-    assert.equal((await learner.request("/api/concepts?id=micro-boundaries")).status, 200);
+    assert.equal((await learner.request("/api/concepts?id=micro-boundaries")).status, 403);
     assert.equal((await learner.request("/api/concepts?id=micro-pattern-strategy")).status, 403);
     const practice = await learner.request("/DSA.html");
     assert.match(practice.text, /"title":"Pro problem 50","pattern":"Pro practice","locked":true/);
@@ -204,6 +204,13 @@ test("account, membership and logout journey uses real handlers, signed webhooks
     assert.equal((await learner.request("/api/checkout", { method:"POST",
       body:{ tier:"Go", provider:"stripe" } })).status, 409);
     assert.equal(merchantCalls.length, 1);
+    await learner.request("/api/session", { method:"DELETE" });
+    const login = await learner.request("/api/account-auth", { method:"POST",
+      body:{ action:"login", username:"FlowLearner", password } });
+    assert.equal(login.status, 200);
+    assert.equal((await learner.request("/api/session")).json.plan, "Go");
+    assert.ok((await learner.request("/api/questions?topic=C%23%20%2F%20.NET")).json.questions.length > 10);
+    assert.equal((await learner.request("/api/concepts?id=micro-boundaries")).status, 403);
   });
 
   await t.test("Pro activates full patterns and purchase history contains only the owning account's records", async () => {

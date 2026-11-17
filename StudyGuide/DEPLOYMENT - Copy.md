@@ -229,9 +229,8 @@ applied by the website build. The current 50% INR offer charges Go INR 750
 (regular 1,500) and Pro INR 2,500 (regular 5,000), one-time. Prices and offer
 metadata come from `api/_pricing.js`. Review both advertised and charged amounts
 before publishing a price change; do not rewrite historical purchases.
-Go includes unlimited
-Interview Q&A, the first two concept lessons per subject, and one six-question
-AI session per UTC day. Pro includes all content and no daily AI session cap.
+Go includes complete subject and company Interview Q&A only. Pro includes all
+available content, including AI interview access subject to service limits.
 PayPal USD prices must be explicitly configured per plan and are not an automatic
 currency conversion. Existing pending purchases retain their recorded amounts.
 AI fails closed without the migration; production ignores the anonymous-testing

@@ -11,6 +11,11 @@ const { UNAVAILABLE_MESSAGE, sendUnavailable } = require("./api/_availability");
 
 const ROOT = __dirname;
 const MAX_API_BODY_BYTES = 1024 * 1024;
+const MAX_STATIC_CACHE_ENTRIES = 128;
+const MAX_STATIC_CACHE_BYTES = 16 * 1024 * 1024;
+const MAX_CACHED_ASSET_BYTES = 2 * 1024 * 1024;
+const staticResponseCache = new Map();
+let staticResponseCacheBytes = 0;
 const RAW_BODY_ROUTES = new Set([
   "/api/webhooks/stripe",
   "/api/webhooks/razorpay",
@@ -40,6 +45,12 @@ const API_ROUTES = new Map([
   ["/api/webhooks/paypal", "./api/webhooks/paypal.js"],
   ["/api/webhooks/razorpay", "./api/webhooks/razorpay.js"],
   ["/api/webhooks/stripe", "./api/webhooks/stripe.js"],
+]);
+const API_RATE_LIMITS = new Map([
+  ["/api/ai-interview", { limit: 20, windowMs: 60 * 1000 }],
+  ["/api/checkout", { limit: 10, windowMs: 60 * 1000 }],
+  ["/api/compile", { limit: 30, windowMs: 60 * 1000 }],
+  ["/api/paypal/capture", { limit: 10, windowMs: 60 * 1000 }],
 ]);
 const PAGE_REWRITES = new Map(
   JSON.parse(fs.readFileSync(path.join(ROOT, "vercel.json"), "utf8")).rewrites
@@ -129,7 +140,46 @@ function requestQuery(searchParams) {
   return query;
 }
 
+function clientAddress(req) {
+  if (process.env.VERCEL) {
+    const forwarded = req.headers["x-forwarded-for"];
+    if (typeof forwarded === "string" && forwarded.trim()) return forwarded.split(",")[0].trim();
+  }
+  if (process.env.RENDER) {
+    const address = req.headers["true-client-ip"];
+    if (typeof address === "string" && address.trim()) return address.trim();
+  }
+  return req.socket?.remoteAddress || "";
+}
+
+async function enforceApiRateLimit(req, res, routePath) {
+  const policy = API_RATE_LIMITS.get(routePath);
+  if (!policy || ["GET", "HEAD", "OPTIONS"].includes(req.method)) return true;
+  const secret = process.env.RATE_LIMIT_SECRET || process.env.AUTH_OTP_SECRET;
+  const address = clientAddress(req);
+  if (!secret || Buffer.byteLength(secret) < 32 || !address) {
+    throw new Error("API rate limiting is not configured.");
+  }
+  const key = crypto.createHmac("sha256", secret).update(`${routePath}\n${address}`).digest("hex");
+  const result = await require("./api/_mongo-data").takeApiRateLimit(
+    key, policy.limit, policy.windowMs,
+  );
+  const retryAfter = Math.max(1, Math.ceil((result.resetAt.getTime() - Date.now()) / 1000));
+  res.setHeader("RateLimit-Limit", String(policy.limit));
+  res.setHeader("RateLimit-Remaining", String(result.remaining));
+  res.setHeader("RateLimit-Reset", String(Math.ceil(result.resetAt.getTime() / 1000)));
+  if (result.allowed) return true;
+  req.resume?.();
+  res.statusCode = 429;
+  res.setHeader("Retry-After", String(retryAfter));
+  res.setHeader("Cache-Control", "no-store, max-age=0");
+  res.setHeader("Content-Type", "application/json; charset=utf-8");
+  res.end(JSON.stringify({ error: "Too many requests. Please wait before trying again." }));
+  return false;
+}
+
 async function handleApi(req, res, url, routePath) {
+  res.setHeader("Cache-Control", "no-store, max-age=0");
   const modulePath = API_ROUTES.get(routePath);
   if (!modulePath) {
     res.statusCode = 404;
@@ -141,6 +191,16 @@ async function handleApi(req, res, url, routePath) {
     res.statusCode = 403;
     res.setHeader("Content-Type", "application/json; charset=utf-8");
     res.end(JSON.stringify({ error: "Submit this request from the KR7Tech website." }));
+    return;
+  }
+  try {
+    if (!await enforceApiRateLimit(req, res, routePath)) return;
+  } catch (error) {
+    console.error("API rate limiter unavailable.", error);
+    res.statusCode = 503;
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.setHeader("Cache-Control", "no-store, max-age=0");
+    res.end(JSON.stringify({ error: UNAVAILABLE_MESSAGE }));
     return;
   }
   let body;
@@ -197,6 +257,53 @@ function resolveStaticFile(urlPath) {
   }
 }
 
+async function staticResponse(filePath, stat) {
+  const isHtml = path.extname(filePath).toLowerCase() === ".html";
+  if (!isHtml) {
+    const cached = staticResponseCache.get(filePath);
+    if (cached && cached.mtimeMs === stat.mtimeMs && cached.ctimeMs === stat.ctimeMs &&
+        cached.size === stat.size) {
+      staticResponseCache.delete(filePath);
+      staticResponseCache.set(filePath, cached);
+      return cached;
+    }
+    if (cached) {
+      staticResponseCache.delete(filePath);
+      staticResponseCacheBytes -= cached.body.length;
+    }
+  }
+  const original = await fs.promises.readFile(filePath);
+  const body = isHtml
+    ? Buffer.from(renderSiteLayout(original.toString("utf8"), path.basename(filePath)))
+    : original;
+  const result = {
+    body,
+    etag: `"${crypto.createHash("sha256").update(body).digest("base64url")}"`,
+    mtimeMs: stat.mtimeMs,
+    ctimeMs: stat.ctimeMs,
+    size: stat.size,
+  };
+  if (!isHtml && body.length <= MAX_CACHED_ASSET_BYTES) {
+    while (staticResponseCache.size >= MAX_STATIC_CACHE_ENTRIES ||
+        staticResponseCacheBytes + body.length > MAX_STATIC_CACHE_BYTES) {
+      const oldestPath = staticResponseCache.keys().next().value;
+      if (oldestPath === undefined) break;
+      staticResponseCacheBytes -= staticResponseCache.get(oldestPath).body.length;
+      staticResponseCache.delete(oldestPath);
+    }
+    staticResponseCache.set(filePath, result);
+    staticResponseCacheBytes += body.length;
+  }
+  return result;
+}
+
+function matchesEtag(header, etag) {
+  return typeof header === "string" && header.split(",").some(value => {
+    const candidate = value.trim();
+    return candidate === "*" || candidate.replace(/^W\//, "") === etag;
+  });
+}
+
 async function routeRequest(req, res) {
   setSecurityHeaders(res);
   let url;
@@ -209,6 +316,7 @@ async function routeRequest(req, res) {
   }
 
   if (url.pathname === "/api/health") {
+    res.setHeader("Cache-Control", "no-store, max-age=0");
     res.setHeader("Content-Type", "application/json; charset=utf-8");
     res.end(JSON.stringify({ status: "ok" }));
     return;
@@ -241,24 +349,45 @@ async function routeRequest(req, res) {
     res.end("Not found");
     return;
   }
-  res.setHeader("Content-Type", MIME_TYPES.get(path.extname(filePath).toLowerCase()));
-  if (path.basename(filePath) === "service-worker.js") res.setHeader("Cache-Control", "no-cache");
-  if (path.extname(filePath).toLowerCase() === ".html") {
-    const html = await fs.promises.readFile(filePath, "utf8");
-    res.end(renderSiteLayout(html, path.basename(filePath)));
-    return;
-  }
-  fs.createReadStream(filePath).on("error", error => {
+  let stat;
+  let asset;
+  try {
+    stat = await fs.promises.stat(filePath);
+    asset = await staticResponse(filePath, stat);
+  } catch (error) {
     console.error("Static file read failed.", error);
-    if (res.headersSent) {
-      res.destroy(error);
+    if (path.extname(filePath).toLowerCase() === ".html") {
+      sendUnavailable(responseAdapter(res));
       return;
     }
     res.statusCode = 503;
     res.setHeader("Content-Type", "text/plain; charset=utf-8");
     res.setHeader("Cache-Control", "no-store, max-age=0");
     res.end(UNAVAILABLE_MESSAGE);
-  }).pipe(res);
+    return;
+  }
+  const extension = path.extname(filePath).toLowerCase();
+  res.setHeader("Content-Type", MIME_TYPES.get(extension));
+  res.setHeader("ETag", asset.etag);
+  res.setHeader("Last-Modified", stat.mtime.toUTCString());
+  res.setHeader("Cache-Control", extension === ".html" || path.basename(filePath) === "service-worker.js"
+    ? "no-cache" : "public, max-age=300, stale-while-revalidate=86400");
+  const noneMatch = req.headers["if-none-match"];
+  const notModified = noneMatch
+    ? matchesEtag(noneMatch, asset.etag)
+    : Number.isFinite(Date.parse(req.headers["if-modified-since"])) &&
+      Math.floor(stat.mtimeMs / 1000) <= Math.floor(Date.parse(req.headers["if-modified-since"]) / 1000);
+  if (notModified) {
+    res.statusCode = 304;
+    res.end();
+    return;
+  }
+  if (req.method === "HEAD") {
+    res.setHeader("Content-Length", String(asset.body.length));
+    res.end();
+    return;
+  }
+  res.end(asset.body);
 }
 
 async function handleRequest(req, res) {

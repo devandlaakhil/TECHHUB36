@@ -1,5 +1,4 @@
 const { paypalAmountMinor, sendError, tierAmount } = require("./_shared");
-const { GO_CONCEPT_LIMIT } = require("./_pro-policy");
 const { mongoEnabled } = require("./_mongo");
 const { authConfigured } = require("./_mongo-auth");
 const { salesReady, purchaseReturn } = require("./_commerce");
@@ -52,8 +51,8 @@ module.exports = async function handler(req, res) {
       providers: providerReady,
       plans: { L1: 500, L2: 500, L3: 500, Go: tierAmount("Go") / 100, Pro: tierAmount("Pro") / 100 },
       planOffers: planOffers(),
-      planBenefits: { Go: { aiInterviewsPerDay: 1, conceptLessonsPerSubject: GO_CONCEPT_LIMIT },
-        Pro: { aiInterviewsPerDay: null, conceptLessonsPerSubject: null } },
+      planBenefits: { Go: { interviewQA: true, concepts: false, aiInterview: false },
+        Pro: { interviewQA: true, concepts: true, aiInterview: true, allContent: true } },
       paypalTiers,
       paypalAmounts,
     });

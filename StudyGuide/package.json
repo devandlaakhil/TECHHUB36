@@ -11,6 +11,7 @@
     "seed:mongodb": "node scripts/seed-mongodb.js",
     "setup:local-admin": "node scripts/setup-local-admin.js",
     "setup:local-preview": "node scripts/setup-local-preview.js",
+    "setup:local-judge0": "node scripts/setup-local-judge0.js",
     "preview:local": "node scripts/local-preview.js",
     "start": "node server.js",
     "test": "node --test tests/*.test.js",

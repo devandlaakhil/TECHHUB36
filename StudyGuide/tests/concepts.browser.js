@@ -458,20 +458,13 @@ test("Redis, concurrency, microservices, HLD, and LLD remain private ordered con
   assert.deepEqual(errors, []);
 });
 
-test("Go reads its included concept lessons without a PIN but cannot fetch the rest", async t => {
+test("Go keeps full concepts locked while retaining the complete Interview Q&A bank", async t => {
   const { page, context, base, errors } = await openSite(t, { paid: "Go" });
   const ids = PATHS.SQL.lessonIds;
   await page.goto(`${base}/Concepts.html?category=SQL`);
-  const first = page.locator(`[data-concept-id="${ids[0]}"]`);
-  await first.waitFor();
-  assert.equal(await first.innerText(), "Read full concept");
-  assert.equal(await page.locator(`[data-concept-id="${ids[1]}"]`).innerText(), "Read full concept");
-  assert.equal(await page.locator(`[data-concept-id="${ids[2]}"]`).innerText(), "Pro - Enter PIN for lesson");
-  page.on("dialog", dialog => { errors.push("Included Go lesson unexpectedly requested a PIN"); return dialog.dismiss(); });
-  await first.click();
-  await page.locator("#concept-reader:not([hidden])").waitFor();
-  assert.equal(await page.locator("#concept-reader-title").innerText(), lessons.find(item => item.id === ids[0]).title);
-  assert.match(await page.locator("#concept-status").innerText(), /Go access/);
+  for (const id of ids) {
+    assert.equal(await page.locator(`[data-concept-id="${id}"]`).innerText(), "Pro - Enter PIN for lesson");
+  }
   assert.equal((await context.request.get(`${base}/api/concepts?id=${ids[2]}`, {
     headers: { authorization: "Bearer paid-session" },
   })).status(), 403);

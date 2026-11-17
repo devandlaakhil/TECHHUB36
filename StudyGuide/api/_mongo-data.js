@@ -102,36 +102,29 @@ async function claimInterview(body) {
     const user = await users.updateOne({ id: body.p_user_id, disabled: { $ne: true } },
       { $inc: { accessRevision: 1 } }, { session });
     if (!user.matchedCount) return { error: "membership" };
-    const entitlements = await db.collection("entitlements").find({
-      user_id: body.p_user_id, active: true, tier: { $in: ["Go", "Pro"] },
-    }, { session }).toArray();
-    const plan = entitlements.some(item => item.tier === "Pro") ? "Pro" : entitlements.some(item => item.tier === "Go") ? "Go" : null;
-    if (!plan) return { error: "membership" };
+    const entitlement = await db.collection("entitlements").findOne({
+      user_id: body.p_user_id, active: true, tier: "Pro",
+    }, { session });
+    if (!entitlement) return { error: "membership" };
     const interviews = db.collection("ai_interview_sessions");
     const claimId = crypto.randomUUID();
     const busyUntil = new Date(now.getTime() + 45000);
     if (!body.p_session_id) {
       if (body.p_turn !== 0) return { error: "invalid" };
-      const day = new Date(now);
-      day.setUTCHours(0, 0, 0, 0);
-      if (plan === "Go" && await interviews.findOne({
-        user_id: body.p_user_id, created_at: { $gte: day }, state: { $ne: "failed" },
-        $or: [{ state: { $ne: "starting" } }, { busy_until: { $gt: now } }],
-      }, { session })) return { error: "quota", resetAt: new Date(day.getTime() + 86400000).toISOString() };
       const id = crypto.randomUUID();
       await interviews.insertOne({
         id, user_id: body.p_user_id, context_hash: body.p_context_hash, state: "starting",
         completed_turns: 0, claim_id: claimId, busy_until: busyUntil, created_at: now,
         expires_at: new Date(now.getTime() + 86400000),
       }, { session });
-      return { sessionId: id, claimId, plan };
+      return { sessionId: id, claimId, plan: "Pro" };
     }
     const interview = await interviews.findOne({ id: body.p_session_id, user_id: body.p_user_id }, { session });
     if (!interview || interview.context_hash !== body.p_context_hash || interview.state !== "active" ||
         interview.expires_at <= now || body.p_turn !== interview.completed_turns + 1) return { error: "session" };
     if (interview.busy_until > now) return { error: "busy" };
     await interviews.updateOne({ id: interview.id }, { $set: { claim_id: claimId, busy_until: busyUntil } }, { session });
-    return { sessionId: interview.id, claimId, plan };
+    return { sessionId: interview.id, claimId, plan: "Pro" };
   });
 }
 
@@ -153,10 +146,46 @@ async function settleInterview(body) {
   return result.modifiedCount === 1;
 }
 
+async function takeApiRateLimit(key, limit, windowMs, now = new Date()) {
+  if (!/^[a-f\d]{64}$/i.test(key) || !Number.isInteger(limit) || limit < 1 ||
+      !Number.isInteger(windowMs) || windowMs < 1000 || !(now instanceof Date) || !Number.isFinite(now.getTime())) {
+    throw new Error("Invalid API rate-limit request.");
+  }
+  const windowStart = Math.floor(now.getTime() / windowMs) * windowMs;
+  const resetAt = new Date(windowStart + windowMs);
+  const id = `api:${key}:${windowStart}`;
+  const collection = (await connect()).db.collection("auth_rate_limits");
+  try {
+    const result = await collection.findOneAndUpdate(
+      { _id: id, count: { $lt: limit } },
+      { $inc: { count: 1 }, $setOnInsert: { expiresAt: new Date(resetAt.getTime() + 60000) } },
+      { upsert: true, returnDocument: "after" },
+    );
+    return {
+      allowed: Boolean(result),
+      remaining: Math.max(0, limit - (result?.count || limit)),
+      resetAt,
+    };
+  } catch (error) {
+    if (error.code !== 11000) throw error;
+    const result = await collection.findOneAndUpdate(
+      { _id: id, count: { $lt: limit } }, { $inc: { count: 1 } }, { returnDocument: "after" },
+    );
+    return {
+      allowed: Boolean(result),
+      remaining: Math.max(0, limit - (result?.count || limit)),
+      resetAt,
+    };
+  }
+}
+
 async function rpc(name, body) {
   if (name === "complete_verified_payment") return completePayment(body);
   if (name === "claim_ai_interview") return claimInterview(body);
   if (name === "settle_ai_interview") return settleInterview(body);
+  if (name === "kr7_take_api_slot") return takeApiRateLimit(
+    body.p_key, body.p_limit, body.p_window_ms, new Date(body.p_now),
+  );
   if (name === "kr7_take_community_slot") {
     const { db } = await connect();
     const now = new Date();
@@ -182,4 +211,4 @@ async function rpc(name, body) {
   throw new Error("Unsupported account procedure.");
 }
 
-module.exports = { mongoRest, parseQuery };
+module.exports = { mongoRest, parseQuery, takeApiRateLimit };

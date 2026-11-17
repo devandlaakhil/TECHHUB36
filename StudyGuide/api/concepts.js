@@ -4,8 +4,7 @@ const lessons = require("./_concept-lessons");
 const { sendError } = require("./_shared");
 const { learningAccess } = require("./_learning-content");
 const { consumeGrant } = require("./_pin-grants");
-const { membershipTier, goConceptIds } = require("./_pro-policy");
-const goLessons = goConceptIds(lessons);
+const { membershipTier } = require("./_pro-policy");
 
 module.exports = async function handler(req, res) {
   res.setHeader("Cache-Control", "private, no-store, max-age=0");
@@ -24,8 +23,7 @@ module.exports = async function handler(req, res) {
     const { entitlements, verificationUnavailable } = await learningAccess(req, { skip: granted });
     const tier = membershipTier(entitlements);
     const premium = tier === "Pro";
-    const goIncluded = tier === "Go" && goLessons.includes(id);
-    if (lesson && !premium && !goIncluded && !granted) {
+    if (lesson && !premium && !granted) {
       return res.status(403).json({ error: "Enter the PIN separately for this Pro concept lesson." });
     }
     return res.status(200).json({
@@ -33,8 +31,7 @@ module.exports = async function handler(req, res) {
         lessons: lessons.map(({ id, category, title, summary }) => ({ id, category, title, summary })),
       }),
       access: { premium, pinActive: granted,
-        ...(verificationUnavailable ? { verificationUnavailable: true } : {}),
-        ...(tier === "Go" ? { plan: tier, includedLessonIds: goLessons } : {}) },
+        ...(verificationUnavailable ? { verificationUnavailable: true } : {}) },
     });
   } catch (error) {
     return sendError(res, error);

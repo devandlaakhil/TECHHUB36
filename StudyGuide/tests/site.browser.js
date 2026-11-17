@@ -24,6 +24,51 @@ async function openSite(t) {
   return { page, context, base: `http://127.0.0.1:${server.address().port}` };
 }
 
+test("shared page content spans the viewport on desktop and mobile without horizontal overflow", async t => {
+  const { page, base } = await openSite(t);
+  const paths = ["/", "/Account.html", "/Membership.html", "/C%23Dotnet.html"];
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const path of paths) {
+      await page.goto(`${base}${path}`);
+      const mainWidth = await page.locator("body > main").evaluate(main => main.getBoundingClientRect().width);
+      assert.equal(mainWidth, width, `${path} should use the full ${width}px viewport`);
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true,
+        `${path} should not create horizontal overflow at ${width}px`);
+    }
+  }
+});
+
+test("shared page heroes use the inset homepage card style without clipping their headings", async t => {
+  const { page, base } = await openSite(t);
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const path of ["/", "/Account.html", "/Subjects.html", "/Membership.html", "/AI-Interview.html"]) {
+      await page.goto(`${base}${path}`);
+      const hero = page.locator("body > main > .hero").first();
+      const card = await hero.evaluate(element => {
+        const bounds = element.getBoundingClientRect();
+        const heading = element.querySelector("h1")?.getBoundingClientRect();
+        const style = getComputedStyle(element);
+        return {
+          radius: parseFloat(style.borderTopLeftRadius),
+          padding: parseFloat(style.paddingLeft),
+          left: bounds.left,
+          right: bounds.right,
+          headingLeft: heading?.left,
+          headingRight: heading?.right,
+        };
+      });
+      assert.ok(card.radius >= 18, `${path} should have rounded hero-card corners`);
+      assert.ok(card.padding >= 18, `${path} should inset hero content`);
+      assert.ok(card.headingLeft >= card.left + card.padding - 1, `${path} heading should not be cut off on the left`);
+      assert.ok(card.headingRight <= card.right - card.padding + 1, `${path} heading should fit inside its card`);
+      assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true,
+        `${path} should not create horizontal overflow at ${width}px`);
+    }
+  }
+});
+
 test("homepage navigation, persistent Student Plan, ten-item previews, and Pro PIN work in a browser", async t => {
   const names = ["PRO_ACCESS_PIN", "PRO_ACCESS_SECRET", "PUBLIC_APP_URL", "NODE_ENV", "VERCEL_ENV"];
   const originalEnv = Object.fromEntries(names.map(name => [name, process.env[name]]));
@@ -273,7 +318,7 @@ test("Interview Q&A navigation opens only its subject bank and preserves separat
   }
 });
 
-test("AI interview retains its server session and does not simulate around quota denial", async t => {
+test("AI interview retains its server session and surfaces the Pro membership requirement", async t => {
   const { page, base } = await openSite(t);
   const payloads = [];
   let starts = 0;
@@ -284,7 +329,7 @@ test("AI interview retains its server session and does not simulate around quota
       starts++;
       return route.fulfill(starts === 1 ? { json: {
         question: "Explain a safe retry.", interviewId: "00000000-0000-4000-8000-000000000001",
-      } } : { status: 429, json: { error: "Go daily interview allowance used." } });
+      } } : { status: 403, json: { error: "AI interviews require an active Pro membership." } });
     }
     return route.fulfill({ json: { summary: "Review idempotency.", strengths: [], improvements: [],
       exampleRevision: "Use a stable operation key.", nextQuestion: null, complete: true, practiceOnly: true } });
@@ -300,7 +345,7 @@ test("AI interview retains its server session and does not simulate around quota
   assert.equal(payloads[1].interviewId, "00000000-0000-4000-8000-000000000001");
   assert.equal(payloads[1].topic, "C# / .NET");
   await page.locator("#start").click();
-  await page.getByText("Go daily interview allowance used.", { exact: true }).waitFor();
+  await page.getByText("AI interviews require an active Pro membership.", { exact: true }).waitFor();
   assert.equal(await page.locator("#interview-panel").isVisible(), false);
   assert.equal(payloads.length, 3);
 });

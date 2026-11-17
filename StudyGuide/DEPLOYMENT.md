@@ -33,6 +33,23 @@ The separate Company Interviews library has ten free questions in total;
 changing company or topic filters does not unlock additional answers.
 Unavailable integrations remain unavailable; deploying does not enable them.
 
+## Server caching and API rate limits
+
+The Node server caches small static responses in a bounded in-process cache and
+returns ETags. Browsers may cache CSS, JavaScript, and image assets for five
+minutes; HTML revalidates on each use, the service worker is never held stale,
+and API responses are not cached.
+
+MongoDB-backed per-IP limits apply to write requests for AI interviews
+(20/minute), checkout (10/minute), code compilation (30/minute), and PayPal
+capture (10/minute). Authentication and community submissions retain their
+existing endpoint-specific limits; payment webhooks are not covered by this
+middleware. Limited responses include `Retry-After`. The limiter fails closed
+with HTTP 503 if MongoDB or its stable key is unavailable. Use the existing
+MongoDB account configuration and keep `AUTH_OTP_SECRET` stable across deploys,
+or set a separate `RATE_LIMIT_SECRET` of at least 32 characters. IP addresses
+are HMACed before storage, and MongoDB TTL cleanup expires old counters.
+
 ## Render
 
 1. Connect your Git repository and create a **Blueprint** using the repository
@@ -237,9 +254,8 @@ applied by the website build. The current 50% INR offer charges Go INR 750
 (regular 1,500) and Pro INR 2,500 (regular 5,000), one-time. Prices and offer
 metadata come from `api/_pricing.js`. Review both advertised and charged amounts
 before publishing a price change; do not rewrite historical purchases.
-Go includes unlimited
-Interview Q&A, the first two concept lessons per subject, and one six-question
-AI session per UTC day. Pro includes all content and no daily AI session cap.
+Go includes complete subject and company Interview Q&A only. Pro includes all
+available content, including AI interview access subject to service limits.
 PayPal USD prices must be explicitly configured per plan and are not an automatic
 currency conversion. Existing pending purchases retain their recorded amounts.
 AI fails closed without the migration; production ignores the anonymous-testing
@@ -301,6 +317,20 @@ npm start
 Local preview: `http://127.0.0.1:10000`. Render does not need the Vercel build.
 The builder replaces only its own marked generated output and refuses to
 overwrite an unrecognized `.vercel/output` directory.
+
+### Local code compiler
+
+For local DSA/compiler testing, install and start Docker Desktop with Linux
+containers enabled, then run `npm run setup:local-judge0` from `StudyGuide`.
+This starts the official Judge0 API, worker, PostgreSQL, and Redis containers.
+The API is bound to `127.0.0.1` only and protected by a generated token. The
+script stores its generated secrets in ignored `.env.judge0` and adds the
+loopback URL/token to ignored `.env.local`; restart `npm start` afterward.
+The first setup downloads a large compiler image (about 10 GB).
+Judge0 uses privileged containers to sandbox submitted programs, so keep this
+local setup on a trusted development machine and do not expose port 2358 to
+your network. Use `docker compose -f docker-compose.judge0.yml down` to stop
+the services; do not use `-v` unless you intend to delete local compiler data.
 
 After your manual deployment:
 
