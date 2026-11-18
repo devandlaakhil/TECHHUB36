@@ -53,9 +53,9 @@ function createAccountStore({ file, bootstrap }) {
     const email = input.email === undefined ? `${id}@preview-account.kr7tech.invalid`
       : typeof input.email === "string" ? input.email.trim().toLowerCase() : "";
     if (!USERNAME.test(username) || email.length > 254 || !EMAIL.test(email) ||
-        typeof input.password !== "string" || input.password.length < 15 || input.password.length > 256 ||
+        typeof input.password !== "string" || input.password.length < 5 || input.password.length > 256 ||
         (input.role !== undefined && !["student", "expert"].includes(input.role))) {
-      throw new AccountInputError(400, "Use a 3-32 character username and a password of 15-256 characters. Admin access cannot be requested.");
+      throw new AccountInputError(400, "Use a 3-32 character username and a password of 5-256 characters. Admin access cannot be requested.");
     }
     const operation = pending.then(async () => {
       if (accounts.some(account => account.username.toLowerCase() === username.toLowerCase() || account.email === email)) {

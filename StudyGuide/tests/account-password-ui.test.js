@@ -14,6 +14,9 @@ test("username/password account page clearly requires no email or OTP", () => {
   assert.match(html, /no email address, email verification, or OTP is needed/i);
   assert.match(html, /No email or OTP is used/i);
   assert.doesNotMatch(html, /type=["']email["']|otp-request-form|email-auth/i);
+  for (const id of ["signup-password", "setup-password", "setup-confirm-password"]) {
+    assert.match(html, new RegExp(`id="${id}"[^>]*minlength="5"`));
+  }
 });
 
 async function open({ enabled = true, existing = false, sessionUnavailable = false, loseSignupSession = false, missingSignupCookie = false, search = "" } = {}) {
@@ -169,15 +172,24 @@ test("existing signed-in accounts can add passwords and database errors do not h
   assert.equal(unavailable.element("account-dashboard").hidden, true);
 });
 
+test("signup accepts the five-character minimum", async () => {
+  const ui = await open();
+  ui.element("signup-username").value = "Learner";
+  ui.element("signup-password").value = "12345";
+  await ui.submit("password-signup-form");
+  assert.equal(ui.posts[0].password, "12345");
+  assert.equal(ui.element("account-dashboard").hidden, false);
+});
+
 test("a failed initial session check cannot block Create account or Login and short passwords explain the requirement", async () => {
   const ui = await open({ sessionUnavailable: true });
   assert.equal(ui.element("password-account-panel").hidden, false);
   assert.equal(ui.element("signup-username").disabled, false);
   ui.element("signup-username").value = "Learner";
-  ui.element("signup-password").value = "short";
+  ui.element("signup-password").value = "four";
   await ui.submit("password-signup-form");
   assert.equal(ui.posts.length, 0);
-  assert.match(ui.element("account-status").textContent, /at least 15/);
+  assert.match(ui.element("account-status").textContent, /at least 5/);
   ui.click("password-show-login");
   assert.equal(ui.element("password-login-form").hidden, false);
 });

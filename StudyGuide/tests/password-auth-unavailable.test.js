@@ -24,11 +24,19 @@ test("unreachable MongoDB explains signup failure without a successful response,
     MONGODB_DATABASE: "fixture", AUTH_OTP_SECRET: "a".repeat(64), PUBLIC_APP_URL: "https://kr7tech.test" });
   const res = { headers: {}, setHeader(name, value) { this.headers[name.toLowerCase()] = value; },
     status(code) { this.statusCode = code; return this; }, json(body) { this.body = body; return this; } };
-  await handler({ method: "POST", headers: { origin: "https://kr7tech.test" },
-    socket: { remoteAddress: "127.0.0.1" },
-    body: { action: "signup", username: "Learner", password: "a memorable test passphrase" } }, res);
+  const errors = [];
+  const log = console.error;
+  console.error = (...values) => errors.push(values);
+  try {
+    await handler({ method: "POST", headers: { origin: "https://kr7tech.test" },
+      socket: { remoteAddress: "127.0.0.1" },
+      body: { action: "signup", username: "Learner", password: "a memorable test passphrase" } }, res);
+  } finally {
+    console.error = log;
+  }
   assert.equal(res.statusCode, 503);
   assert.match(res.body.error, /cannot connect to MongoDB/);
+  assert.deepEqual(errors, [["Account auth MongoDB connection failed.", "Error"]]);
   assert.equal(res.body.signedIn, undefined);
   assert.equal(res.headers["set-cookie"], undefined);
   assert.doesNotMatch(JSON.stringify(res.body), /private connection details|memorable test passphrase/);

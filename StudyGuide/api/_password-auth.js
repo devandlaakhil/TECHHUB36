@@ -51,8 +51,8 @@ function createPasswordService({ db, now = () => new Date() }) {
     }
     const username = input.username.trim();
     const loginName = username.toLowerCase();
-    if (action !== "login" && input.password.length < 15) {
-      return { status: 400, error: "Choose a password with at least 15 characters. Spaces and passphrases are welcome." };
+    if (action !== "login" && input.password.length < 5) {
+      return { status: 400, error: "Choose a password with at least 5 characters." };
     }
     if (action === "signup" && input.role !== undefined && !["student", "expert"].includes(input.role)) {
       return { status: 400, error: "Choose Student or Expert. Admin access cannot be requested." };

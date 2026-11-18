@@ -84,3 +84,12 @@ test("ordinary username-only preview accounts start Free as Students and survive
   assert.equal((await restarted.login("Learner", password)).id, created.id);
   assert.equal(restarted.users().some(user => user.role === "admin"), false);
 });
+
+test("local preview signup accepts five characters and rejects shorter passwords", async t => {
+  const settings = fixture(t);
+  const store = createAccountStore(settings);
+  await assert.rejects(store.register({ username: "TooShort", password: "1234" }), { status: 400 });
+  const created = await store.register({ username: "Minimum", password: "12345" });
+  assert.equal(created.role, "student");
+  assert.equal((await store.login("Minimum", "12345")).id, created.id);
+});

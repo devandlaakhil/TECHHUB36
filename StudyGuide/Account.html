@@ -23,8 +23,8 @@
           <input id="signup-username" name="username" autocomplete="username" pattern="[A-Za-z][A-Za-z0-9_]{2,31}" minlength="3" maxlength="32" required />
           <p class="muted">3-32 letters, numbers or underscores, starting with a letter.</p>
           <label for="signup-password">Choose a password</label>
-          <input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="15" maxlength="256" required />
-          <p class="muted">Use at least 15 characters. A memorable passphrase with spaces is welcome. No email or OTP is used; password recovery is not available, so keep your password safe.</p>
+          <input id="signup-password" name="password" type="password" autocomplete="new-password" minlength="5" maxlength="256" required />
+          <p class="muted">Use at least 5 characters. No email or OTP is used; password recovery is not available, so keep your password safe.</p>
           <p class="muted">Your account starts Free. Choose Go or Pro whenever you are ready to unlock more.</p>
           <p class="muted">By creating an account, you agree to the <a href="Terms.html">Terms of Use</a> and acknowledge the <a href="Privacy.html">Privacy notice</a>.</p>
           <button type="submit">Create account</button>
@@ -55,9 +55,9 @@
         <label for="setup-username">Choose a username</label>
         <input id="setup-username" autocomplete="username" pattern="[A-Za-z][A-Za-z0-9_]{2,31}" minlength="3" maxlength="32" required />
         <label for="setup-password">Choose a password</label>
-        <input id="setup-password" type="password" autocomplete="new-password" minlength="15" maxlength="256" required />
+        <input id="setup-password" type="password" autocomplete="new-password" minlength="5" maxlength="256" required />
         <label for="setup-confirm-password">Confirm password</label>
-        <input id="setup-confirm-password" type="password" autocomplete="new-password" minlength="15" maxlength="256" required />
+        <input id="setup-confirm-password" type="password" autocomplete="new-password" minlength="5" maxlength="256" required />
         <button type="submit">Save login details</button>
       </form>
       <button id="account-sign-out" type="button">Sign out</button>

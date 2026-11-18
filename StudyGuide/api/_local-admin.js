@@ -28,8 +28,8 @@ function localAdminAllowed(req) {
 }
 
 async function passwordHash(password) {
-  if (typeof password !== "string" || password.length < 8 || password.length > 256) {
-    throw new Error("Provide an administrator password between 8 and 256 characters.");
+  if (typeof password !== "string" || password.length < 5 || password.length > 256) {
+    throw new Error("Provide a password between 5 and 256 characters.");
   }
   const salt = crypto.randomBytes(32).toString("hex");
   const derived = await scrypt(password, Buffer.from(salt, "hex"), 64, SCRYPT_OPTIONS);

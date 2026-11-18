@@ -22,7 +22,8 @@ module.exports = async function handler(req, res) {
       .update(typeof ip === "string" ? ip.split(",")[0].trim() : "unknown").digest("hex");
     let db;
     try { ({ db } = await connect()); }
-    catch {
+    catch (error) {
+      console.error("Account auth MongoDB connection failed.", error.code || error.name);
       return res.status(503).json({
         error: "The server cannot connect to MongoDB, so account signup/login cannot continue. Check the database credentials and hosting IP access list.",
       });
@@ -35,7 +36,8 @@ module.exports = async function handler(req, res) {
     }
     if (result.status === 429) res.setHeader("Retry-After", "900");
     return res.status(result.status).json(result.error ? { error: result.error } : { signedIn: true, user: result.user });
-  } catch {
+  } catch (error) {
+    console.error("Account auth request failed.", error.code || error.name);
     return res.status(503).json({ error: "Account signup/login is temporarily unavailable. Please try again later." });
   }
 };

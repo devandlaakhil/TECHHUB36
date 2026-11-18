@@ -153,13 +153,15 @@ test("existing verified email accounts add login details without changing their 
 });
 
 test("short passwords, MongoDB operator injection, cross-site requests and missing setup fail closed", async () => {
-  assert.equal((await action({ action: "signup", username: "Learner", password: "short" })).statusCode, 400);
+  assert.equal((await action({ action: "signup", username: "Learner", password: "four" })).statusCode, 400);
+  const minimum = await action({ action: "signup", username: "Minimum", password: "12345" });
+  assert.equal(minimum.statusCode, 201);
   assert.equal((await action({ action: "login", username: { $ne: null }, password })).statusCode, 400);
   const cross = response();
   await handler({ ...request({ action: "signup", username: "Learner", password }),
     headers: { origin: "https://attacker.test" } }, cross);
   assert.equal(cross.statusCode, 403);
-  assert.equal(db.collection("users").rows.length, 0);
+  assert.equal(db.collection("users").rows.length, 1);
   delete process.env.MONGODB_URI;
   assert.equal((await action({ action: "signup", username: "Learner", password })).statusCode, 503);
 });

@@ -103,8 +103,8 @@
     if (busy) return;
     const password = document.getElementById(`${prefix}-password`);
     const username = document.getElementById(`${prefix}-username`);
-    if (action !== "login" && password.value.length < 15) {
-      status.textContent = "Choose a password with at least 15 characters, for example a memorable passphrase.";
+    if (action !== "login" && password.value.length < 5) {
+      status.textContent = "Choose a password with at least 5 characters.";
       password.focus();
       return;
     }

@@ -115,7 +115,7 @@ without replica-set transactions is not sufficient for paid features.
 3. Generate a private random `AUTH_OTP_SECRET` with at least 32 characters.
    Open `Account.html`: **Create account** stores a unique case-insensitive
    username and salted scrypt password hash in MongoDB. **Already have an
-   account? Login** uses those saved credentials. Passwords require 15-256
+   account? Login** uses those saved credentials. Passwords require 5-256
    characters, are never stored as readable text, and are not placed in browser
    storage. New accounts start as Free Students; signup never grants Admin
    or paid access. Username-only accounts do not yet have email recovery.
@@ -175,7 +175,7 @@ For an **offline Version 1 visual preview without MongoDB**, run
 `npm run setup:local-preview` with `LOCAL_PREVIEW_PASSWORD` supplied privately
 in the terminal environment, then `npm run preview:local`. Open
 `http://127.0.0.1:10000/Account.html` and choose **Create account** with a new
-username and password of at least 15 characters. The setup initializes local
+username and password of at least 5 characters. The setup initializes local
 preview settings; there is no separate Admin login form.
 
 The standalone launcher serves the real pages and private teaching content
